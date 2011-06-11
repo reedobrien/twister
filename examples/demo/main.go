@@ -29,8 +29,6 @@ func main() {
 				Register("/", "GET", homeHandler).
 				Register("/core/file", "GET", web.FileHandler("static/file.txt", nil)).
 				Register("/static/<path:.*>", "GET", web.DirectoryHandler("static/", nil)).
-				Register("/chat", "GET", chatFrameHandler).
-				Register("/chat/ws", "GET", chatWsHandler).
 				Register("/mp", "GET", mpGetHandler, "POST", mpPostHandler).
 				Register("/debug/pprof/<command>", "*", web.HandlerFunc(pprof.ServeWeb)).
 				Register("/core/", "GET", coreHandler).
@@ -59,7 +57,6 @@ const homeStr = `
 <body>
 <ul>
 <li><a href="/core">Core functionality</a>
-<li><a href="/chat">Chat using WebSockets</a>
 <li><a href="/mp">Multipart Form</a>
 </ul>
 </body>

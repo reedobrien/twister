@@ -1,13 +1,11 @@
-run: clean example
-	./example 
+run: clean chat
+	./chat 
  
 include $(GOROOT)/src/Make.inc
 
-TARG=example
+TARG=chat
 DEPS=../../server ../../websocket ../../pprof
 GOFILES=\
-    main.go\
-    core.go\
-    multipart.go\
+    chat.go
 
 include $(GOROOT)/src/Make.cmd

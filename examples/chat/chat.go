@@ -3,19 +3,22 @@ package main
 import (
 	"github.com/garyburd/twister/web"
 	"github.com/garyburd/twister/websocket"
+	"github.com/garyburd/twister/server"
 	"log"
-	"sync"
 	"template"
 )
-
-var messageChan = make(chan []byte)
 
 type subscription struct {
 	conn      *websocket.Conn
 	subscribe bool
 }
 
-var subscriptionChan = make(chan subscription)
+
+var (
+	messageChan      = make(chan []byte)
+	chatTempl        *template.Template
+	subscriptionChan = make(chan subscription)
+)
 
 func hub() {
 	conns := make(map[*websocket.Conn]int)
@@ -33,14 +36,7 @@ func hub() {
 	}
 }
 
-var hubOnce sync.Once
-
-func startHub() {
-	hubOnce.Do(func() { go hub() })
-}
-
 func chatWsHandler(req *web.Request) {
-	startHub()
 	conn, err := websocket.Upgrade(req, 1024, 1024, nil)
 	if err != nil {
 		log.Print("Upgrade failed", err)
@@ -73,15 +69,19 @@ func chatFrameHandler(req *web.Request) {
 		req.URL.Host)
 }
 
-var chatTempl *template.Template
-
-func init() {
+func main() {
 	chatTempl = template.New(template.FormatterMap{"": template.HTMLFormatter})
 	chatTempl.SetDelims("{{", "}}")
 	if err := chatTempl.Parse(chatStr); err != nil {
 		panic("template error: " + err.String())
 	}
+	go hub()
+	server.Run(":8080",
+		web.NewRouter().
+			Register("/", "GET", chatFrameHandler).
+			Register("/ws", "GET", chatWsHandler))
 }
+
 
 const chatStr = `
 <html>
@@ -117,7 +117,7 @@ const chatStr = `
     });
 
     if (window["WebSocket"]) {
-        conn = new WebSocket("ws://{{@}}/chat/ws");
+        conn = new WebSocket("ws://{{@}}/ws");
         conn.onclose = function(evt) {
             appendLog($("<div><b>Connection closed.</b></div>"))
         }
