@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"io"
 	"os"
@@ -261,12 +262,12 @@ func VerifyValue(secret, context string, signedValue string) (string, os.Error) 
 	if len(actualSig) != len(expectedSig) {
 		return "", errVerificationFailure
 	}
-	// Time independent compare
-	eq := 0
+	// Constant time compare
+	var v byte
 	for i := 0; i < len(actualSig); i++ {
-		eq = eq | (int(actualSig[i]) ^ int(expectedSig[i]))
+		v |= actualSig[i] ^ expectedSig[i]
 	}
-	if eq != 0 {
+	if subtle.ConstantTimeByteEq(v, 0) != 1 {
 		return "", errVerificationFailure
 	}
 	return a[2], nil
