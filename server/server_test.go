@@ -21,6 +21,7 @@ import (
 	"os"
 	"syscall"
 	"testing"
+	"log"
 )
 
 type testAddr string
@@ -240,7 +241,18 @@ var serverTests = []struct {
 	},
 }
 
+type silentLogger struct {
+	t *testing.T
+}
+
+func (l silentLogger) Write(p []byte) (int, os.Error) {
+	l.t.Log(string(p))
+	return len(p), nil
+}
+
 func TestServer(t *testing.T) {
+	log.SetOutput(silentLogger{t})
+	defer log.SetOutput(os.Stdout)
 	for _, st := range serverTests {
 		l := &testListener{done: make(chan bool), errs: st.errs}
 		l.in.WriteString(st.in)
