@@ -258,7 +258,7 @@ func (w *chunkedResponseBody) Write(p []byte) (int, os.Error) {
 		if n > len(p) {
 			n = len(p)
 		}
-		copy(w.buf[w.n:], p)
+		copy(w.buf[w.n:], p[:n])
 		w.n += n
 		nn += n
 		p = p[n:]
