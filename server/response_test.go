@@ -52,27 +52,34 @@ var chunkedResponseTests = []struct {
 	{[]int{10, -1, 5, -1, 5, -1}, dots[:10] + "05\r\n" + dots[:5] + "\r\n05\r\n" + dots[:5] + "\r\n0\r\n\r\n"},
 }
 
+var writers = map[string]func(w io.Writer, s string) (int, os.Error){
+	"byte":   func(w io.Writer, s string) (int, os.Error) { return w.Write([]byte(s)) },
+	"string": func(w io.Writer, s string) (int, os.Error) { return io.WriteString(w, s) },
+}
+
 func TestChunkedResponse(t *testing.T) {
-	for _, tt := range chunkedResponseTests {
-		var buf bytes.Buffer
-		nn := tt.n[0]
-		w, _ := newChunkedResponseBody(&buf, []byte(dots[:nn]), chunkTestBufferSize)
-		for i := 1; i < len(tt.n); i++ {
-			n := tt.n[i]
-			if n < 0 {
-				w.Flush()
-			} else {
-				w.Write([]byte(dots[:n]))
-				nn += n
+	for writerName, writer := range writers {
+		for _, tt := range chunkedResponseTests {
+			var buf bytes.Buffer
+			nn := tt.n[0]
+			w, _ := newChunkedResponseBody(&buf, []byte(dots[:nn]), chunkTestBufferSize)
+			for i := 1; i < len(tt.n); i++ {
+				n := tt.n[i]
+				if n < 0 {
+					w.Flush()
+				} else {
+					writer(w, dots[:n])
+					nn += n
+				}
 			}
-		}
-		n, _ := w.finish()
-		if n != len(tt.out) {
-			t.Errorf("%v, written = %d, want %d", tt.n, n, len(tt.out))
-		}
-		out := buf.String()
-		if out != tt.out {
-			t.Errorf("%v\ngot:  %q\nwant: %q", tt.n, out, tt.out)
+			n, _ := w.finish()
+			if n != len(tt.out) {
+				t.Errorf("%s %v, written = %d, want %d", writerName, tt.n, n, len(tt.out))
+			}
+			out := buf.String()
+			if out != tt.out {
+				t.Errorf("%s %v\ngot:  %q\nwant: %q", writerName, tt.n, out, tt.out)
+			}
 		}
 	}
 }

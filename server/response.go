@@ -49,6 +49,13 @@ func (w *nullResponseBody) Write(p []byte) (int, os.Error) {
 	return len(p), nil
 }
 
+func (w *nullResponseBody) WriteString(p string) (int, os.Error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	return len(p), nil
+}
+
 func (w *nullResponseBody) Flush() os.Error {
 	return w.err
 }
@@ -112,6 +119,19 @@ func (w *identityResponseBody) Write(p []byte) (int, os.Error) {
 	}
 	var n int
 	n, w.err = w.bw.Write(p)
+	w.written += n
+	if w.err == nil && w.contentLength >= 0 && w.written > w.contentLength {
+		w.err = os.NewError("twister: long write by handler")
+	}
+	return n, w.err
+}
+
+func (w *identityResponseBody) WriteString(p string) (int, os.Error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	var n int
+	n, w.err = w.bw.WriteString(p)
 	w.written += n
 	if w.err == nil && w.contentLength >= 0 && w.written > w.contentLength {
 		w.err = os.NewError("twister: long write by handler")
@@ -241,22 +261,48 @@ func (w *chunkedResponseBody) finish() (int, os.Error) {
 	return w.written, err
 }
 
+func (w *chunkedResponseBody) ncopy(max int) int {
+	n := len(w.buf) - w.n - 2 // 2 for CRLF after data
+	if n <= 0 {
+		w.Flush()
+		if w.err != nil {
+			return -1
+		}
+		n = len(w.buf) - w.n - 2 // 2 for CRLF after data
+	}
+	if n > max {
+		n = max
+	}
+	return n
+}
+
 func (w *chunkedResponseBody) Write(p []byte) (int, os.Error) {
 	if w.err != nil {
 		return 0, w.err
 	}
 	nn := 0
 	for len(p) > 0 {
-		n := len(w.buf) - w.n - 2 // 2 for CRLF after data
-		if n <= 0 {
-			w.Flush()
-			if w.err != nil {
-				break
-			}
-			n = len(w.buf) - w.n - 2 // 2 for CRLF after data
+		n := w.ncopy(len(p))
+		if n < 0 {
+			break
 		}
-		if n > len(p) {
-			n = len(p)
+		copy(w.buf[w.n:], p[:n])
+		w.n += n
+		nn += n
+		p = p[n:]
+	}
+	return nn, w.err
+}
+
+func (w *chunkedResponseBody) WriteString(p string) (int, os.Error) {
+	if w.err != nil {
+		return 0, w.err
+	}
+	nn := 0
+	for len(p) > 0 {
+		n := w.ncopy(len(p))
+		if n < 0 {
+			break
 		}
 		copy(w.buf[w.n:], p[:n])
 		w.n += n
