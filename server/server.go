@@ -341,6 +341,10 @@ func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 		t.closeAfterResponse = true
 	}
 
+	if header.Get(web.HeaderConnection) == "close" {
+		t.closeAfterResponse = true
+	}
+
 	t.chunkedResponse = true
 	contentLength := -1
 

@@ -103,18 +103,20 @@ func (c testConn) SetWriteTimeout(nsec int64) os.Error {
 func testHandler(req *web.Request) {
 	req.ParseForm(1000)
 	header := make(web.Header)
-	p := req.Param.Get("panic")
-	if p == "before" {
+	if req.Param.Get("panic") == "before" {
 		panic("before")
 	}
 	if s := req.Param.Get("cl"); s != "" {
 		header.Set(web.HeaderContentLength, s)
 	}
+	if req.Param.Get("connection") == "close" {
+		header.Set(web.HeaderConnection, "close")
+	}
 	w := req.Responder.Respond(web.StatusOK, header)
 	if s := req.Param.Get("w"); s != "" {
 		w.Write([]byte(s))
 	}
-	if p == "after" {
+	if req.Param.Get("panic") == "after" {
 		panic("after")
 	}
 }
@@ -149,6 +151,12 @@ var serverTests = []struct {
 		in:      "GET /?cl=5&w=Hello HTTP/1.0\r\nConnection: keep-alive\r\n\r\n",
 		out:     "HTTP/1.0 200 OK\r\nContent-Length: 5\r\n\r\nHello",
 		readAll: true,
+	},
+	{
+		// Handler forces connection to close.
+		in:      "GET /?cl=5&w=Hello&connection=close HTTP/1.0\r\nConnection: keep-alive\r\n\r\n",
+		out:     "HTTP/1.0 200 OK\r\nConnection: close\r\nContent-Length: 5\r\n\r\nHello",
+		readAll: false,
 	},
 	{
 		in:      "GET /?w=Hello HTTP/1.1\r\n\r\n",
