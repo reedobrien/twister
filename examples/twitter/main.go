@@ -48,7 +48,7 @@ func credentials(req *web.Request, key string) (*oauth.Credentials, os.Error) {
 	if s == "" {
 		return nil, os.NewError("main: missing cookie")
 	}
-	a := strings.Split(s, "/", -1)
+	a := strings.Split(s, "/")
 	if len(a) != 2 {
 		return nil, os.NewError("main: bad credential cookie")
 	}
