@@ -49,9 +49,10 @@ type Part struct {
 	Data         []byte
 }
 
-// ParseMultipartForm parses a multipart/form-data body. Form fields are
-// added to the request Param. This function loads the entire request body in
-// memory. This may not be appropriate in some scenarios.
+// ParseMultipartForm parses a multipart/form-data body. Form fields are added
+// to the request Param. This function loads the entire request body in memory.
+// If this is not apporpriate, then the application should use MultipartReader
+// to read the request body incrementally.
 func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, os.Error) {
 	m, err := NewMultipartReader(req, maxRequestBodyLen)
 	if err != nil {

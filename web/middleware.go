@@ -91,6 +91,9 @@ func SetErrorHandler(e ErrorHandler, h Handler) Handler {
 //      h = web.ProxyHeaderHandler("X-Scheme", "X-Real-Ip", h)
 //	    server.Run(":8080", h)
 //  }
+//
+// The original values are added to the request Env with the keys
+// "twister.web.OriginalRemoteAddr" and "twister.web.OriginalScheme".
 func ProxyHeaderHandler(addrName, schemeName string, h Handler) Handler {
 	return proxyHeaderHandler{
 		addrName:   addrName,

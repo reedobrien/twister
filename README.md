@@ -1,25 +1,33 @@
 Twister
 =======
 
-Twister is a lightweight and modular framework for building web applications in
-the [Go](http://golang.org/) programming language. Twister includes the
-following features:
+Twister is a lightweight framework for building modular web applications in
+the [Go](http://golang.org/) programming language. 
 
-* Simple model for middleware using composition.
-* Routing to handlers using regular expression match on host and path. 
-* Cross site request forgery protection.
-* Application specified error pages.
-* Cookie parsing. 
-* Static file handling. 
-* Signed values for cookies and form parameters. 
-* WebSockets. 
-* Multipart forms. 
-* Built-in HTTP server.
-* OAuth 1.0 client
-* and more...
+Hello, world
+------------
 
-Twister works great with templating engines and database drivers written for
-Go. 
+Here is the canonical "Hello, world" example application for Twister:
+
+```go
+package main
+
+import (
+    "github.com/garyburd/twister/server"
+    "github.com/garyburd/twister/web"
+    "io"
+)
+
+func serveHello(req *web.Request) {
+    w := req.Respond(web.StatusOK, web.HeaderContentType, "text/plain; charset=\"utf-8\"")
+    io.WriteString(w, "Hello World!")
+}
+
+func main() {
+    h := web.NewRouter().Register("/", "GET", serveHello)
+    server.Run(":8080", h)
+}
+```
 
 Installation
 ------------

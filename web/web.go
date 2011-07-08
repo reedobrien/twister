@@ -227,13 +227,14 @@ func (req *Request) BodyBytes(maxLen int) ([]byte, os.Error) {
 // applications should use the FormHandler middleware instead of calling this
 // method directly.
 func (req *Request) ParseForm(maxRequestBodyLen int) os.Error {
-	if req.Env["twister.web.formparsed"] != nil ||
+	const key = "twister.web.formParsed"
+	if req.Env[key] != nil ||
 		req.ContentType != "application/x-www-form-urlencoded" ||
 		req.ContentLength == 0 ||
 		(req.Method != "POST" && req.Method != "PUT") {
 		return nil
 	}
-	req.Env["twister.web.formparsed"] = true
+	req.Env[key] = true
 	p, err := req.BodyBytes(maxRequestBodyLen)
 	if err != nil {
 		return err
