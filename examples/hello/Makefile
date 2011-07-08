@@ -1,11 +1,11 @@
 run: clean example
-	./example
+	./example 
  
 include $(GOROOT)/src/Make.inc
 
 TARG=example
-DEPS=../../server ../../websocket ../../pprof
+DEPS=../../server
 GOFILES=\
-    chat.go
+    main.go\
 
 include $(GOROOT)/src/Make.cmd

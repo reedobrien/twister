@@ -1,10 +1,10 @@
-run: wiki
-	./wiki
+run: example
+	./example
     
 include $(GOROOT)/src/Make.inc
 
 DEPS=../../server
-TARG=wiki
+TARG=example
 GOFILES=\
     final.go\
 
