@@ -14,7 +14,6 @@
 
 include $(GOROOT)/src/Make.inc
 
-DEPS=../web
 TARG=github.com/garyburd/twister/server
 GOFILES=\
     server.go\
