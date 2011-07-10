@@ -28,7 +28,6 @@ import (
 	"path"
 	"strconv"
 	"strings"
-    _ "github.com/garyburd/twister"
 )
 
 var (

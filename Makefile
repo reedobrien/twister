@@ -1,8 +1,11 @@
-include $(GOROOT)/src/Make.inc
+default:
+	./all.bash clean install test
 
-TARG=github.com/garyburd/twister
-GOFILES=\
-	doc.go\
+clean:
+	./all.bash clean
 
-include $(GOROOT)/src/Make.pkg
+install:
+	./all.bash install
 
+test:
+	./all.bash test
