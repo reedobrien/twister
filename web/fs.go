@@ -125,9 +125,9 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 	}
 }
 
-// DirectoryHandler returns a request handler that serves static files from root
-// using using the relative request parameter "path". The "path" parameter is
-// typically set using a Router pattern match:
+// DirectoryHandler returns a request handler that serves static files from
+// root using using the URL parameter "path". The "path" parameter is typically
+// set using a Router pattern match:
 //
 //  r.Register("/static/<path:.*>", "GET", DirectoryHandler(root))
 //
@@ -152,9 +152,9 @@ type directoryHandler struct {
 
 func (dh *directoryHandler) ServeWeb(req *Request) {
 
-	fname := req.Param.Get("path")
+	fname := req.URLParam["path"]
 	if fname == "" {
-		panic("twister: DirectoryHandler expects path param")
+		panic("twister: DirectoryHandler expects path URLParam")
 	}
 
 	fname = path.Clean(dh.root + fname)

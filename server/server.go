@@ -317,7 +317,6 @@ func readChunkFraming(br *bufio.Reader, first bool) (int, os.Error) {
 	return int(n), nil
 }
 
-
 func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 	if t.hijacked {
 		log.Println("twister: Respond called on hijacked connection")
