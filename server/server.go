@@ -97,17 +97,20 @@ type transaction struct {
 	headerSize         int
 }
 
-var requestLineRegexp = regexp.MustCompile("^([_A-Za-z0-9]+) ([^ ]+) HTTP/([0-9]+)\\.([0-9]+)[\r\n ]+$")
+var requestLineRegexp = regexp.MustCompile("^([_A-Za-z0-9]+) ([^ ]+) HTTP/([0-9]+)\\.([0-9]+)[ ]*")
 
 func readRequestLine(b *bufio.Reader) (method string, url string, version int, err os.Error) {
 
-	p, err := b.ReadSlice('\n')
-	if err != nil {
-		if err == bufio.ErrBufferFull {
-			err = web.ErrLineTooLong
-		}
-		return
-	}
+    var p []byte
+    var isPrefix bool
+
+    p, isPrefix, err = b.ReadLine()
+    if isPrefix {
+        err = web.ErrLineTooLong
+    }
+    if err != nil {
+        return
+    }
 
 	m := requestLineRegexp.FindSubmatch(p)
 	if m == nil {
