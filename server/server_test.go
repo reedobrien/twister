@@ -15,6 +15,7 @@
 package server
 
 import (
+	"bufio"
 	"bytes"
 	"github.com/garyburd/twister/web"
 	"net"
@@ -278,6 +279,66 @@ func TestServer(t *testing.T) {
 		}
 		if l.readAll != st.readAll {
 			t.Errorf("in=%q readAll = %v, want %v", st.in, l.readAll, st.readAll)
+		}
+	}
+}
+
+var readRequestLineTests = []struct {
+	line    string
+	method  string
+	url     string
+	version int
+}{
+	{
+		"GET / HTTP/1.0",
+		"GET",
+		"/",
+		web.ProtocolVersion10,
+	},
+	{
+		"GET / HTTP/1.1",
+		"GET",
+		"/",
+		web.ProtocolVersion11,
+	},
+	{
+		"GET /bax HTTP/01.01",
+		"GET",
+		"/bax",
+		web.ProtocolVersion11,
+	},
+	{
+		"GET /bax xTTP/01.01",
+		"",
+		"",
+		0,
+	},
+	{
+		"GET/bax HTTP/01.01",
+		"",
+		"",
+		0,
+	},
+}
+
+func TestReadRequestLine(t *testing.T) {
+	for _, tt := range readRequestLineTests {
+		r := bufio.NewReader(bytes.NewBuffer([]byte(tt.line + "\r\n")))
+		method, url, version, err := readRequestLine(r)
+		if (err != nil) != (tt.method == "") {
+			t.Errorf("%s, err=%v expectedErr=%v", tt.line, err, tt.method == "")
+		}
+		if err != nil {
+			continue
+		}
+		if method != tt.method {
+			t.Errorf("%s, method=%s, want=%s", tt.line, method, tt.method)
+		}
+		if url != tt.url {
+			t.Errorf("%s, url=%s, want=%s", tt.line, url, tt.url)
+		}
+		if version != tt.version {
+			t.Errorf("%s, version=%d, want=%d", tt.line, version, tt.version)
 		}
 	}
 }

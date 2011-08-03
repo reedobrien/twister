@@ -24,15 +24,12 @@ import (
 	"log"
 	"net"
 	"os"
-	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
 )
 
-var (
-	ErrBadRequestLine = os.NewError("twister.server: could not parse request line")
-)
+var errBadRequestLine = os.NewError("twister.server: could not parse request line")
 
 // Server defines parameters for running an HTTP server.
 type Server struct {
@@ -97,43 +94,91 @@ type transaction struct {
 	headerSize         int
 }
 
-var requestLineRegexp = regexp.MustCompile("^([_A-Za-z0-9]+) ([^ ]+) HTTP/([0-9]+)\\.([0-9]+)[ ]*")
+var httpslash = []byte("HTTP/")
+
+// nextNum scans the next decimal number from p.
+func nextNum(p []byte) (n int, rest []byte, err os.Error) {
+	for i, b := range p {
+		switch {
+		case '0' <= b && b <= '9':
+			n = n*10 + int(b-'0')
+			if n > 1000 {
+				err = errBadRequestLine
+				return
+			}
+		case i == 0:
+			err = errBadRequestLine
+			return
+		default:
+			rest = p[i:]
+			return
+		}
+	}
+	return
+}
+
+// nextWord scans to the next space in p.
+func nextWord(p []byte) (s string, rest []byte, err os.Error) {
+	i := bytes.IndexByte(p, ' ')
+	if i < 0 {
+		err = errBadRequestLine
+		return
+	}
+	s = string(p[:i])
+	rest = p[i+1:]
+	return
+}
 
 func readRequestLine(b *bufio.Reader) (method string, url string, version int, err os.Error) {
+	var p []byte
+	var isPrefix bool
 
-    var p []byte
-    var isPrefix bool
-
-    p, isPrefix, err = b.ReadLine()
-    if isPrefix {
-        err = web.ErrLineTooLong
-    }
-    if err != nil {
-        return
-    }
-
-	m := requestLineRegexp.FindSubmatch(p)
-	if m == nil {
-		err = ErrBadRequestLine
-		return
+	p, isPrefix, err = b.ReadLine()
+	if isPrefix {
+		err = web.ErrLineTooLong
 	}
-
-	method = string(m[1])
-
-	major, err := strconv.Atoi(string(m[3]))
 	if err != nil {
 		return
 	}
 
-	minor, err := strconv.Atoi(string(m[4]))
+	method, p, err = nextWord(p)
 	if err != nil {
+		return
+	}
+
+	url, p, err = nextWord(p)
+	if err != nil {
+		return
+	}
+
+	if !bytes.HasPrefix(p, httpslash) {
+		err = errBadRequestLine
+		return
+	}
+
+	var major int
+	major, p, err = nextNum(p[len(httpslash):])
+	if err != nil {
+		return
+	}
+
+	if len(p) == 0 || p[0] != '.' {
+		err = errBadRequestLine
+		return
+	}
+
+	var minor int
+	minor, p, err = nextNum(p[1:])
+	if err != nil {
+		return
+	}
+
+	if len(p) != 0 {
+		err = errBadRequestLine
 		return
 	}
 
 	version = web.ProtocolVersion(major, minor)
-
-	url = string(m[2])
-
 	return
 }
 
