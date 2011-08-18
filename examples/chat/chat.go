@@ -5,7 +5,7 @@ import (
 	"github.com/garyburd/twister/websocket"
 	"github.com/garyburd/twister/server"
 	"log"
-	"template"
+	"old/template"
 )
 
 type subscription struct {

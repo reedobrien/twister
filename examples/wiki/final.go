@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"template"
+	"old/template"
 )
 
 type page struct {
@@ -41,17 +41,17 @@ func viewHandler(req *web.Request) {
 }
 
 func editHandler(req *web.Request) {
-	title := req.Param.Get("title")
+	title := req.URLParam["title"]
 	p, err := loadPage(title)
 	if err != nil {
-		p = &page{Title: req.Param.Get("title")}
+		p = &page{Title: req.URLParam["title"]}
 	}
 	renderTemplate(req, "edit", p)
 }
 
 func saveHandler(req *web.Request) {
 	body := req.Param.Get("body")
-	title := req.Param.Get("title")
+	title := req.URLParam["title"]
 	p := &page{Title: title, Body: []byte(body)}
 	err := p.save()
 	if err != nil {

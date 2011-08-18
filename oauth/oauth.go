@@ -33,6 +33,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"url"
 )
 
 var noEscape = [256]bool{
@@ -111,17 +112,17 @@ func (p keyValueArray) Less(i, j int) bool {
 
 // writeBaseString writes method, url, and param to w using the OAuth signature
 // base string computation described in section 3.4.1 of the RFC.
-func writeBaseString(w io.Writer, method string, url string, param web.Values) {
+func writeBaseString(w io.Writer, method string, urlStr string, param web.Values) {
 	// Method
 	w.Write(encode(strings.ToUpper(method), false))
 	w.Write([]byte{'&'})
 
 	// URL
-	parsedURL, _ := http.ParseURL(url)
-	w.Write(encode(strings.ToLower(parsedURL.Scheme), false))
+	u, _ := url.Parse(urlStr)
+	w.Write(encode(strings.ToLower(u.Scheme), false))
 	w.Write(encode("://", false))
-	w.Write(encode(strings.ToLower(parsedURL.Host), false))
-	w.Write(encode(parsedURL.Path, false))
+	w.Write(encode(strings.ToLower(u.Host), false))
+	w.Write(encode(u.Path, false))
 	w.Write([]byte{'&'})
 
 	// Create sorted array of encoded parameters. Parameter keys and values are
@@ -161,7 +162,7 @@ func writeBaseString(w io.Writer, method string, url string, param web.Values) {
 }
 
 // signature returns the OAuth signature as described in section 3.4 of the RFC.
-func signature(clientCredentials *Credentials, credentials *Credentials, method, url string, param web.Values) string {
+func signature(clientCredentials *Credentials, credentials *Credentials, method, urlStr string, param web.Values) string {
 	var key bytes.Buffer
 
 	key.Write(encode(clientCredentials.Secret, false))
@@ -171,7 +172,7 @@ func signature(clientCredentials *Credentials, credentials *Credentials, method,
 	}
 
 	h := hmac.NewSHA1(key.Bytes())
-	writeBaseString(h, method, url, param)
+	writeBaseString(h, method, urlStr, param)
 	sum := h.Sum()
 
 	encodedSum := make([]byte, base64.StdEncoding.EncodedLen(len(sum)))
@@ -212,7 +213,7 @@ type Credentials struct {
 }
 
 // SignParam adds an OAuth signature to param.
-func (c *Client) SignParam(credentials *Credentials, method, url string, param map[string][]string) {
+func (c *Client) SignParam(credentials *Credentials, method, urlStr string, param map[string][]string) {
 	p := web.Values(param)
 	p.Set("oauth_consumer_key", c.Credentials.Token)
 	p.Set("oauth_signature_method", "HMAC-SHA1")
@@ -225,12 +226,12 @@ func (c *Client) SignParam(credentials *Credentials, method, url string, param m
 	if credentials != nil {
 		p.Set("oauth_token", credentials.Token)
 	}
-	p.Set("oauth_signature", signature(&c.Credentials, credentials, method, url, param))
+	p.Set("oauth_signature", signature(&c.Credentials, credentials, method, urlStr, param))
 }
 
-func (c *Client) request(client *http.Client, credentials *Credentials, url string, param web.Values) (*Credentials, web.Values, os.Error) {
-	c.SignParam(credentials, "POST", url, param)
-	resp, err := http.Post(url, "application/x-www-form-urlencoded", bytes.NewBuffer(param.FormEncodedBytes()))
+func (c *Client) request(client *http.Client, credentials *Credentials, urlStr string, param web.Values) (*Credentials, web.Values, os.Error) {
+	c.SignParam(credentials, "POST", urlStr, param)
+	resp, err := http.Post(urlStr, "application/x-www-form-urlencoded", bytes.NewBuffer(param.FormEncodedBytes()))
 	if err != nil {
 		return nil, nil, err
 	}

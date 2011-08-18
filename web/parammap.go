@@ -16,8 +16,8 @@ package web
 
 import (
 	"bytes"
-	"http"
 	"os"
+	"url"
 )
 
 // Values maps names to slices of values.
@@ -70,7 +70,7 @@ func (m Values) FormEncodedBytes() []byte {
 	var b bytes.Buffer
 	sep := false
 	for key, values := range m {
-		escapedKey := http.URLEscape(key)
+		escapedKey := url.QueryEscape(key)
 		for _, value := range values {
 			if sep {
 				b.WriteByte('&')
@@ -79,7 +79,7 @@ func (m Values) FormEncodedBytes() []byte {
 			}
 			b.WriteString(escapedKey)
 			b.WriteByte('=')
-			b.WriteString(http.URLEscape(value))
+			b.WriteString(url.QueryEscape(value))
 		}
 	}
 	return b.Bytes()

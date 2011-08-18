@@ -8,7 +8,7 @@ import (
 	"github.com/garyburd/twister/web"
 	"log"
 	"net"
-	"template"
+	"old/template"
 )
 
 func homeHandler(req *web.Request) {

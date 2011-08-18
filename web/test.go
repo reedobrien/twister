@@ -17,10 +17,10 @@ package web
 import (
 	"bufio"
 	"bytes"
-	"http"
 	"io"
 	"net"
 	"os"
+	"url"
 )
 
 type testTransaction struct {
@@ -103,7 +103,7 @@ func (a testAddr) String() string {
 
 // RunHandler runs the handler with a request created from the arguments and
 // returns the response. This function is intended to be used in tests.
-func RunHandler(url string, method string, reqHeader Header, reqBody []byte, handler Handler) (status int, header Header, respBody []byte) {
+func RunHandler(urlStr string, method string, reqHeader Header, reqBody []byte, handler Handler) (status int, header Header, respBody []byte) {
 	var t testTransaction
 	if reqBody != nil {
 		t.in.Write(reqBody)
@@ -113,11 +113,11 @@ func RunHandler(url string, method string, reqHeader Header, reqBody []byte, han
 	if reqHeader == nil {
 		reqHeader = make(Header)
 	}
-	parsedURL, err := http.ParseURL(url)
+	u, err := url.Parse(urlStr)
 	if err != nil {
 		panic(err)
 	}
-	req, err := NewRequest(remoteAddr, method, parsedURL, protocolVersion, reqHeader)
+	req, err := NewRequest(remoteAddr, method, u, protocolVersion, reqHeader)
 	if err != nil {
 		panic(err)
 	}

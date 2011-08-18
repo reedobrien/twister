@@ -16,9 +16,9 @@ package web
 
 import (
 	"bytes"
-	"http"
 	"regexp"
 	"strings"
+	"url"
 )
 
 // Router dispatches HTTP requests to a handler using the path component of the
@@ -162,7 +162,7 @@ func (router *Router) find(path string, method string) (Handler, []string, []str
 		}
 		values = values[1:]
 		for j := 0; j < len(values); j++ {
-			if value, e := http.URLUnescape(values[j]); e != nil {
+			if value, e := url.QueryUnescape(values[j]); e != nil {
 				return routerError(StatusNotFound), nil, nil
 			} else {
 				values[j] = value

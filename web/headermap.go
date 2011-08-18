@@ -244,15 +244,15 @@ func (m Header) ParseHttpHeader(br *bufio.Reader) (err os.Error) {
 	headerCount := 0
 
 	for {
-        p, isPrefix, err := br.ReadLine()
-        switch {
-        case err == os.EOF:
-            return io.ErrUnexpectedEOF
-        case err != nil:
-            return err
-        case isPrefix:
-            return ErrLineTooLong
-        }
+		p, isPrefix, err := br.ReadLine()
+		switch {
+		case err == os.EOF:
+			return io.ErrUnexpectedEOF
+		case err != nil:
+			return err
+		case isPrefix:
+			return ErrLineTooLong
+		}
 
 		// End of headers?
 		if len(p) == 0 {
@@ -341,59 +341,59 @@ func trimBytes(p []byte) []byte {
 
 // Header names in canonical format.
 const (
-	HeaderAccept               = "Accept"
-	HeaderAcceptCharset        = "Accept-Charset"
-	HeaderAcceptEncoding       = "Accept-Encoding"
-	HeaderAcceptLanguage       = "Accept-Language"
-	HeaderAcceptRanges         = "Accept-Ranges"
-	HeaderAge                  = "Age"
-	HeaderAllow                = "Allow"
-	HeaderAuthorization        = "Authorization"
-	HeaderCacheControl         = "Cache-Control"
-	HeaderConnection           = "Connection"
-	HeaderContentDisposition   = "Content-Disposition"
-	HeaderContentEncoding      = "Content-Encoding"
-	HeaderContentLanguage      = "Content-Language"
-	HeaderContentLength        = "Content-Length"
-	HeaderContentLocation      = "Content-Location"
-	HeaderContentMD5           = "Content-Md5"
-	HeaderContentRange         = "Content-Range"
-	HeaderContentType          = "Content-Type"
-	HeaderCookie               = "Cookie"
-	HeaderDate                 = "Date"
-	HeaderETag                 = "Etag"
-	HeaderEtag                 = "Etag"
-	HeaderExpect               = "Expect"
-	HeaderExpires              = "Expires"
-	HeaderFrom                 = "From"
-	HeaderHost                 = "Host"
-	HeaderIfMatch              = "If-Match"
-	HeaderIfModifiedSince      = "If-Modified-Since"
-	HeaderIfNoneMatch          = "If-None-Match"
-	HeaderIfRange              = "If-Range"
-	HeaderIfUnmodifiedSince    = "If-Unmodified-Since"
-	HeaderLastModified         = "Last-Modified"
-	HeaderLocation             = "Location"
-	HeaderMaxForwards          = "Max-Forwards"
-	HeaderOrigin               = "Origin"
-	HeaderPragma               = "Pragma"
-	HeaderProxyAuthenticate    = "Proxy-Authenticate"
-	HeaderProxyAuthorization   = "Proxy-Authorization"
-	HeaderRange                = "Range"
-	HeaderReferer              = "Referer"
-	HeaderRetryAfter           = "Retry-After"
-	HeaderServer               = "Server"
-	HeaderSetCookie            = "Set-Cookie"
-	HeaderTE                   = "Te"
-	HeaderTrailer              = "Trailer"
-	HeaderTransferEncoding     = "Transfer-Encoding"
-	HeaderUpgrade              = "Upgrade"
-	HeaderUserAgent            = "User-Agent"
-	HeaderVary                 = "Vary"
-	HeaderVia                  = "Via"
-	HeaderWWWAuthenticate      = "Www-Authenticate"
-	HeaderWarning              = "Warning"
-	HeaderXXSRFToken           = "X-Xsrftoken"
+	HeaderAccept             = "Accept"
+	HeaderAcceptCharset      = "Accept-Charset"
+	HeaderAcceptEncoding     = "Accept-Encoding"
+	HeaderAcceptLanguage     = "Accept-Language"
+	HeaderAcceptRanges       = "Accept-Ranges"
+	HeaderAge                = "Age"
+	HeaderAllow              = "Allow"
+	HeaderAuthorization      = "Authorization"
+	HeaderCacheControl       = "Cache-Control"
+	HeaderConnection         = "Connection"
+	HeaderContentDisposition = "Content-Disposition"
+	HeaderContentEncoding    = "Content-Encoding"
+	HeaderContentLanguage    = "Content-Language"
+	HeaderContentLength      = "Content-Length"
+	HeaderContentLocation    = "Content-Location"
+	HeaderContentMD5         = "Content-Md5"
+	HeaderContentRange       = "Content-Range"
+	HeaderContentType        = "Content-Type"
+	HeaderCookie             = "Cookie"
+	HeaderDate               = "Date"
+	HeaderETag               = "Etag"
+	HeaderEtag               = "Etag"
+	HeaderExpect             = "Expect"
+	HeaderExpires            = "Expires"
+	HeaderFrom               = "From"
+	HeaderHost               = "Host"
+	HeaderIfMatch            = "If-Match"
+	HeaderIfModifiedSince    = "If-Modified-Since"
+	HeaderIfNoneMatch        = "If-None-Match"
+	HeaderIfRange            = "If-Range"
+	HeaderIfUnmodifiedSince  = "If-Unmodified-Since"
+	HeaderLastModified       = "Last-Modified"
+	HeaderLocation           = "Location"
+	HeaderMaxForwards        = "Max-Forwards"
+	HeaderOrigin             = "Origin"
+	HeaderPragma             = "Pragma"
+	HeaderProxyAuthenticate  = "Proxy-Authenticate"
+	HeaderProxyAuthorization = "Proxy-Authorization"
+	HeaderRange              = "Range"
+	HeaderReferer            = "Referer"
+	HeaderRetryAfter         = "Retry-After"
+	HeaderServer             = "Server"
+	HeaderSetCookie          = "Set-Cookie"
+	HeaderTE                 = "Te"
+	HeaderTrailer            = "Trailer"
+	HeaderTransferEncoding   = "Transfer-Encoding"
+	HeaderUpgrade            = "Upgrade"
+	HeaderUserAgent          = "User-Agent"
+	HeaderVary               = "Vary"
+	HeaderVia                = "Via"
+	HeaderWWWAuthenticate    = "Www-Authenticate"
+	HeaderWarning            = "Warning"
+	HeaderXXSRFToken         = "X-Xsrftoken"
 )
 
 // HeaderName returns the canonical format of the header name. 

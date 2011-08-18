@@ -15,10 +15,10 @@
 package web
 
 import (
-	"http"
 	"reflect"
 	"strings"
 	"testing"
+	"url"
 )
 
 var multiPartTests = []struct {
@@ -133,7 +133,7 @@ func TestMultiPart(t *testing.T) {
 		req, err := NewRequest(
 			"",
 			"",
-			&http.URL{},
+			&url.URL{},
 			ProtocolVersion11,
 			NewHeader(HeaderContentType, "multipart/form-data; boundary=deadbeef"))
 		if err != nil {

@@ -19,7 +19,6 @@ import (
 	"bufio"
 	"bytes"
 	"github.com/garyburd/twister/web"
-	"http"
 	"io"
 	"log"
 	"net"
@@ -27,6 +26,7 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"url"
 )
 
 var errBadRequestLine = os.NewError("twister.server: could not parse request line")
@@ -129,7 +129,7 @@ func nextWord(p []byte) (s string, rest []byte, err os.Error) {
 	return
 }
 
-func readRequestLine(b *bufio.Reader) (method string, url string, version int, err os.Error) {
+func readRequestLine(b *bufio.Reader) (method string, urlStr string, version int, err os.Error) {
 	var p []byte
 	var isPrefix bool
 
@@ -146,7 +146,7 @@ func readRequestLine(b *bufio.Reader) (method string, url string, version int, e
 		return
 	}
 
-	url, p, err = nextWord(p)
+	urlStr, p, err = nextWord(p)
 	if err != nil {
 		return
 	}
@@ -183,7 +183,7 @@ func readRequestLine(b *bufio.Reader) (method string, url string, version int, e
 }
 
 func (t *transaction) prepare() (err os.Error) {
-	method, rawURL, version, err := readRequestLine(t.br)
+	method, urlStr, version, err := readRequestLine(t.br)
 	if err != nil {
 		return err
 	}
@@ -194,25 +194,25 @@ func (t *transaction) prepare() (err os.Error) {
 		return err
 	}
 
-	url, err := http.ParseURL(rawURL)
+	u, err := url.Parse(urlStr)
 	if err != nil {
 		return err
 	}
 
-	if url.Host == "" {
-		url.Host = header.Get(web.HeaderHost)
-		if url.Host == "" {
-			url.Host = t.server.DefaultHost
+	if u.Host == "" {
+		u.Host = header.Get(web.HeaderHost)
+		if u.Host == "" {
+			u.Host = t.server.DefaultHost
 		}
 	}
 
 	if t.server.Secure {
-		url.Scheme = "https"
+		u.Scheme = "https"
 	} else {
-		url.Scheme = "http"
+		u.Scheme = "http"
 	}
 
-	req, err := web.NewRequest(t.conn.RemoteAddr().String(), method, url, version, header)
+	req, err := web.NewRequest(t.conn.RemoteAddr().String(), method, u, version, header)
 	if err != nil {
 		return
 	}
@@ -478,12 +478,12 @@ func (t *transaction) invokeHandler() {
 	if !t.server.NoRecoverHandlers {
 		defer func() {
 			if r := recover(); r != nil {
-				url := "none"
+				urlStr := "none"
 				if t.req != nil && t.req.URL != nil {
-					url = t.req.URL.String()
+					urlStr = t.req.URL.String()
 				}
 				stack := string(debug.Stack())
-				log.Printf("Panic while serving \"%s\": %v\n%s", url, r, stack)
+				log.Printf("Panic while serving \"%s\": %v\n%s", urlStr, r, stack)
 				t.closeAfterResponse = true
 			}
 		}()
@@ -494,11 +494,11 @@ func (t *transaction) invokeHandler() {
 // Finish the HTTP request
 func (t *transaction) finish() os.Error {
 	if !t.respondCalled {
-		url := "unknown"
+		urlStr := "unknown"
 		if t.req != nil && t.req.URL != nil {
-			url = t.req.URL.String()
+			urlStr = t.req.URL.String()
 		}
-		return os.NewError("twister: handler did not call respond while serving " + url)
+		return os.NewError("twister: handler did not call respond while serving " + urlStr)
 	}
 	var written int
 	if t.responseErr == nil {

@@ -29,17 +29,18 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"url"
 )
 
 var appID string
 var appSecret string
 
 // getUrlEncodedForm fetches a URL and decodes the response body as a URL encoded form.
-func getUrlEncodedForm(url string, param web.Values) (web.Values, os.Error) {
+func getUrlEncodedForm(urlStr string, param web.Values) (web.Values, os.Error) {
 	if param != nil {
-		url = url + "?" + param.FormEncodedString()
+		urlStr = urlStr + "?" + param.FormEncodedString()
 	}
-	r, err := http.Get(url)
+	r, err := http.Get(urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -60,11 +61,11 @@ func getUrlEncodedForm(url string, param web.Values) (web.Values, os.Error) {
 }
 
 // getJSON fetches a URL and decodes the response body as JSON.
-func getJSON(url string, param web.Values) (interface{}, os.Error) {
+func getJSON(urlStr string, param web.Values) (interface{}, os.Error) {
 	if param != nil {
-		url = url + "?" + param.FormEncodedString()
+		urlStr = urlStr + "?" + param.FormEncodedString()
 	}
-	r, err := http.Get(url)
+	r, err := http.Get(urlStr)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func accessToken(req *web.Request) (string, os.Error) {
 	if s == "" {
 		return "", os.NewError("main: missing cookie")
 	}
-	token, err := http.URLUnescape(s)
+	token, err := url.QueryUnescape(s)
 	if err != nil {
 		return "", os.NewError("main: bad credential cookie")
 	}

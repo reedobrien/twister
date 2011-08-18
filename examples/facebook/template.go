@@ -20,7 +20,7 @@ import (
 	"log"
 	"mime"
 	"path"
-	"template"
+	"old/template"
 )
 
 // itemFormatter formats a Facebook feed item by invoking the appropriate child

@@ -18,7 +18,6 @@ package web
 
 import (
 	"bufio"
-	"http"
 	"io"
 	"io/ioutil"
 	"log"
@@ -28,6 +27,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"url"
 )
 
 var (
@@ -58,7 +58,7 @@ type Request struct {
 	Method string
 
 	// The request URL with host and scheme set appropriately.
-	URL *http.URL
+	URL *url.URL
 
 	// Protocol version: major version * 1000 + minor version	
 	ProtocolVersion int
@@ -117,11 +117,11 @@ func (f HandlerFunc) ServeWeb(req *Request) { f(req) }
 
 // NewRequest allocates and initializes a request. This function is provided
 // for the convenience of protocol adapters (fcgi, native http server, ...).
-func NewRequest(remoteAddr string, method string, url *http.URL, protocolVersion int, header Header) (req *Request, err os.Error) {
+func NewRequest(remoteAddr string, method string, u *url.URL, protocolVersion int, header Header) (req *Request, err os.Error) {
 	req = &Request{
 		RemoteAddr:      remoteAddr,
 		Method:          strings.ToUpper(method),
-		URL:             url,
+		URL:             u,
 		ProtocolVersion: protocolVersion,
 		ErrorHandler:    defaultErrorHandler,
 		Param:           make(Values),
@@ -176,21 +176,21 @@ func (req *Request) Error(status int, reason os.Error, headerKeysAndValues ...st
 }
 
 // Redirect responds to the request with a redirect to the specified URL.
-func (req *Request) Redirect(url string, perm bool, headerKeysAndValues ...string) {
+func (req *Request) Redirect(urlStr string, perm bool, headerKeysAndValues ...string) {
 	status := StatusFound
 	if perm {
 		status = StatusMovedPermanently
 	}
 
 	// Make relative path absolute
-	u, err := http.ParseURL(url)
-	if err != nil && u.Scheme == "" && url[0] != '/' {
+	u, err := url.Parse(urlStr)
+	if err != nil && u.Scheme == "" && urlStr[0] != '/' {
 		d, _ := path.Split(req.URL.Path)
-		url = d + url
+		urlStr = d + urlStr
 	}
 
 	header := NewHeader(headerKeysAndValues...)
-	header.Set(HeaderLocation, url)
+	header.Set(HeaderLocation, urlStr)
 	req.Responder.Respond(status, header)
 }
 

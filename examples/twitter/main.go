@@ -26,7 +26,8 @@ import (
 	"log"
 	"os"
 	"strings"
-	"template"
+	"old/template"
+	"url"
 )
 
 var oauthClient = oauth.Client{
@@ -37,7 +38,7 @@ var oauthClient = oauth.Client{
 
 // credentialsCookie encodes OAuth credentials to a Set-Cookie header value.
 func credentialsCookie(name string, c *oauth.Credentials, maxAgeDays int) string {
-	return web.NewCookie(name, http.URLEscape(c.Token)+"/"+http.URLEscape(c.Secret)).
+	return web.NewCookie(name, url.QueryEscape(c.Token)+"/"+url.QueryEscape(c.Secret)).
 		MaxAgeDays(maxAgeDays).
 		String()
 }
@@ -52,11 +53,11 @@ func credentials(req *web.Request, key string) (*oauth.Credentials, os.Error) {
 	if len(a) != 2 {
 		return nil, os.NewError("main: bad credential cookie")
 	}
-	token, err := http.URLUnescape(a[0])
+	token, err := url.QueryUnescape(a[0])
 	if err != nil {
 		return nil, os.NewError("main: bad credential cookie")
 	}
-	secret, err := http.URLUnescape(a[1])
+	secret, err := url.QueryUnescape(a[1])
 	if err != nil {
 		return nil, os.NewError("main: bad credential cookie")
 	}
@@ -141,7 +142,7 @@ func home(req *web.Request) {
 func readSettings() {
 	b, err := ioutil.ReadFile("settings.json")
 	if err != nil {
-		log.Fatal("could not read settings.json", err)
+		log.Fatal("could not read settings.json ", err)
 	}
 	var m map[string]interface{}
 	err = json.Unmarshal(b, &m)

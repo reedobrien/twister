@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/garyburd/twister/web"
-	"template"
+	"old/template"
 )
 
 func mpGetHandler(req *web.Request) {
