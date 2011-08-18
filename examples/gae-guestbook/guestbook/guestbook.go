@@ -5,14 +5,14 @@
 package guestbook
 
 import (
+	"appengine/datastore"
+	"appengine/user"
+	"github.com/garyburd/twister/gae"
+	"github.com/garyburd/twister/web"
 	"io"
 	"os"
 	"template"
 	"time"
-	"github.com/garyburd/twister/gae"
-	"github.com/garyburd/twister/web"
-	"appengine/datastore"
-	"appengine/user"
 )
 
 type Greeting struct {

@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/garyburd/twister/web"
 	"os"
-	"old/template"
+	"template"
 )
 
 func coreErrorHandler(req *web.Request, status int, reason os.Error, header web.Header) {
@@ -35,7 +35,7 @@ func coreHandler(req *web.Request) {
 	}
 }
 
-var coreTempl = template.MustParse(coreStr, template.FormatterMap{"": template.HTMLFormatter})
+var coreTempl = template.Must(template.New("core").Parse(coreStr))
 
 const coreStr = `
 <html>
@@ -44,7 +44,7 @@ const coreStr = `
 </head>
 <body>
 <hr>
-Status: {status} {message}
+Status: {{html .status}} {{html .message}}
 <hr>
 <a href="/core/file">file handler</a><br>
 <a href="/static/file.txt">directory handler</a><br>
@@ -56,21 +56,21 @@ Status: {status} {message}
 <a href="/core/b/foo/c/bar/">/core/b/foo/c/bar/</a> (not found)<br>
 <a href="/core/?panic=before">/core/?panic=before</a><br>
 <a href="/core/?panic=after">/core/?panic=after</a><br>
-<form method="post" action="/core/c"><input type="hidden" name="xsrf" value="{xsrf}"><input type=text value="hello" name=b><input type="submit"></form>
+<form method="post" action="/core/c"><input type="hidden" name="xsrf" value="{{.xsrf}}"><input type=text value="hello" name=b><input type="submit"></form>
 <form method="post" action="/core/c"><input type=text value="hello" name=b><input value="xsrf fail" type="submit"></form>
 <hr>
-{.section req}
+{{with .req}}
 <table>
-<tr><th align="left" valign="top">RemoteAddr</th><td>{RemoteAddr}</td></tr>
-<tr><th align="left" valign="top">Method</th><td>{Method}</td></tr>
-<tr><th align="left" valign="top">URL</th><td>{URL}</td></tr>
-<tr><th align="left" valign="top">ProtocolVersion</th><td>{ProtocolVersion}</td></tr>
-<tr><th align="left" valign="top">Param</th><td>{Param}</td></tr>
-<tr><th align="left" valign="top">URLParam</th><td>{URLParam}</td></tr>
-<tr><th align="left" valign="top">ContentType</th><td>{ContentType}</td></tr>
-<tr><th align="left" valign="top">ContentLength</th><td>{ContentLength}</td></tr>
-<tr><th align="left" valign="top">Header</th><td>{Header}</td></tr>
+<tr><th align="left" valign="top">RemoteAddr</th><td>{{html .RemoteAddr}}</td></tr>
+<tr><th align="left" valign="top">Method</th><td>{{html .Method}}</td></tr>
+<tr><th align="left" valign="top">URL</th><td>{{html .URL}}</td></tr>
+<tr><th align="left" valign="top">ProtocolVersion</th><td>{{html .ProtocolVersion}}</td></tr>
+<tr><th align="left" valign="top">Param</th><td>{{html .Param}}</td></tr>
+<tr><th align="left" valign="top">URLParam</th><td>{{html .URLParam}}</td></tr>
+<tr><th align="left" valign="top">ContentType</th><td>{{html .ContentType}}</td></tr>
+<tr><th align="left" valign="top">ContentLength</th><td>{{html .ContentLength}}</td></tr>
+<tr><th align="left" valign="top">Header</th><td>{{html .Header}}</td></tr>
 </table>
-{.end}
+{{end}}
 </body>
 </html> `

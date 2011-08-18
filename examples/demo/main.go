@@ -8,7 +8,7 @@ import (
 	"github.com/garyburd/twister/web"
 	"log"
 	"net"
-	"old/template"
+	"template"
 )
 
 func homeHandler(req *web.Request) {
@@ -48,7 +48,7 @@ func main() {
 	}
 }
 
-var homeTempl = template.MustParse(homeStr, template.FormatterMap{"": template.HTMLFormatter})
+var homeTempl = template.Must(template.New("home").Parse(homeStr))
 
 const homeStr = `
 <html>

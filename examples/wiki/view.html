@@ -1,5 +1,5 @@
-<h1>{page.Title}</h1>
+<h1>{{.page.Title |html}}</h1>
 
-<p>[<a href="/edit/{page.Title}">edit</a>]</p>
+<p>[<a href="/edit/{{.page.Title |html}}">edit</a>]</p>
 
-<div>{page.Body}</div>
+<div>{{printf "%s" .page.Body |html}}</div>

@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/garyburd/twister/web"
-	"old/template"
+	"template"
 )
 
 func mpGetHandler(req *web.Request) {
@@ -42,7 +42,7 @@ func mpPostHandler(req *web.Request) {
 		})
 }
 
-var mpTempl = template.MustParse(mpStr, template.FormatterMap{"": template.HTMLFormatter})
+var mpTempl = template.Must(template.New("mp").Parse(mpStr))
 
 const mpStr = `
 <html>
@@ -52,22 +52,22 @@ const mpStr = `
 <body>
 <h3>multipart/form-data</h3>
 <hr>
-<form method="post" action="/mp?xsrf={xsrf}" enctype="multipart/form-data">
+<form method="post" action="/mp?xsrf={{.xsrf}}" enctype="multipart/form-data">
 hello <input type="text" name="hello" value="world"><br>
 foo <input type="text" name="foo" value="bar"></br>
 file <input type="file" name="file"></br>
 <input type="submit">
 </form>
-{.section  result}
+{{with  .result}}
 <hr>
-err: {err}<br>
-hello: {hello}<br>
-foo: {foo}<br>
-file name: {filename}<br>
-file contentType: {contentType}<br>
-file contentParam: {contentParam}<br>
-file size: {size}<br>
-{.end}
+err: {{.err}}<br>
+hello: {{.hello}}<br>
+foo: {{.foo}}<br>
+file name: {{.filename}}<br>
+file contentType: {{.contentType}}<br>
+file contentParam: {{.contentParam}}<br>
+file size: {{.size}}<br>
+{{end}}
 </body>
 </html>
 `

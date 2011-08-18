@@ -26,7 +26,7 @@ import (
 	"log"
 	"os"
 	"strings"
-	"old/template"
+	"template"
 	"url"
 )
 
@@ -164,8 +164,7 @@ func main() {
 	server.Run(":8080", h)
 }
 
-var fmap = template.FormatterMap{"": template.HTMLFormatter}
-var homeLoggedOutTempl = template.MustParse(homeLoggedOutStr, fmap)
+var homeLoggedOutTempl = template.Must(template.New("loggedout").Parse(homeLoggedOutStr))
 
 const homeLoggedOutStr = `
 <html>
@@ -176,14 +175,14 @@ const homeLoggedOutStr = `
 </body>
 </html>`
 
-var homeTempl = template.MustParse(homeStr, fmap)
+var homeTempl = template.Must(template.New("home").Parse(homeStr))
 
 const homeStr = `
 <html>
 <head>
 </head>
 <body>
-{.repeated section @}
-<p>{.section user}<b>{screen_name}</b> {.end}{text}
-{.end}
+{{range .}}
+<p><b>{{html .user.name}}</b> {{html .text}}
+{{end}}
 </body>`

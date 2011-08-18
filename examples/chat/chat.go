@@ -1,11 +1,11 @@
 package main
 
 import (
+	"github.com/garyburd/twister/server"
 	"github.com/garyburd/twister/web"
 	"github.com/garyburd/twister/websocket"
-	"github.com/garyburd/twister/server"
 	"log"
-	"old/template"
+	"template"
 )
 
 type subscription struct {
@@ -69,11 +69,7 @@ func chatFrameHandler(req *web.Request) {
 }
 
 func main() {
-	chatTempl = template.New(template.FormatterMap{"": template.HTMLFormatter})
-	chatTempl.SetDelims("{{", "}}")
-	if err := chatTempl.Parse(chatStr); err != nil {
-		panic("template error: " + err.String())
-	}
+	chatTempl = template.Must(template.New("chat").Parse(chatStr))
 	go hub()
 	server.Run(":8080",
 		web.NewRouter().
@@ -115,7 +111,7 @@ const chatStr = `
     });
 
     if (window["WebSocket"]) {
-        conn = new WebSocket("ws://{{@}}/ws");
+        conn = new WebSocket("ws://{{.}}/ws");
         conn.onclose = function(evt) {
             appendLog($("<div><b>Connection closed.</b></div>"))
         }

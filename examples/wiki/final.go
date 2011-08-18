@@ -8,7 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"old/template"
+	"template"
 )
 
 type page struct {
@@ -65,7 +65,8 @@ var templates = make(map[string]*template.Template)
 
 func init() {
 	for _, tmpl := range []string{"edit", "view"} {
-		templates[tmpl] = template.MustParseFile(tmpl+".html", nil)
+		t := template.Must(template.ParseFile(tmpl + ".html"))
+		templates[tmpl] = t
 	}
 }
 

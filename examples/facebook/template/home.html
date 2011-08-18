@@ -2,10 +2,10 @@
 <head>
 </head>
 <body>
-{.repeated section data}
+{{range .data}}
 <p>
-{@|item}
-{.end}
+{{item .}}
+{{end}}
 <hr>
 <a href="/logout">logout</a>
 </body>

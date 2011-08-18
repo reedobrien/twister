@@ -15,26 +15,29 @@
 package main
 
 import (
+	"bytes"
 	"github.com/garyburd/twister/web"
-	"io"
 	"log"
 	"mime"
+	"os"
 	"path"
-	"old/template"
+	"template"
 )
 
 // itemFormatter formats a Facebook feed item by invoking the appropriate child
 // template.
-func itemFormatter(w io.Writer, format string, values ...interface{}) {
+func itemFormatter(values ...interface{}) (interface{}, os.Error) {
 	itemType := values[0].(map[string]interface{})["type"].(string)
 	t, ok := itemTemplates[itemType]
 	if !ok {
 		t = otherItemTemplate
 	}
-	err := t.t.Execute(w, values[0])
+	var b bytes.Buffer
+	err := t.t.Execute(&b, values[0])
 	if err != nil {
-		log.Println("Error executing item formatter", itemType, err)
+		return nil, err
 	}
+	return b.String(), nil
 }
 
 type Template struct {
@@ -44,7 +47,9 @@ type Template struct {
 
 func parseTemplate(filename string) *Template {
 	return &Template{
-		t:        template.MustParseFile(path.Join("template", filename), formatterMap),
+		t: template.Must(template.New(filename).
+			Funcs(template.FuncMap{"item": itemFormatter}).
+			ParseFile(path.Join("template", filename))),
 		mimeType: mime.TypeByExtension(path.Ext(filename))}
 }
 
@@ -58,10 +63,6 @@ func (t *Template) respond(req *web.Request, status int, value interface{}, kvs 
 }
 
 var (
-	formatterMap = template.FormatterMap{
-		"":     template.HTMLFormatter,
-		"item": template.HTMLFormatter, // Temporary value to break initialization cycle.
-	}
 	homeTemplate      = parseTemplate("home.html")
 	loggedOutTemplate = parseTemplate("loggedout.html")
 	otherItemTemplate = parseTemplate("item/other.html")
@@ -70,7 +71,3 @@ var (
 		"status": parseTemplate("item/status.html"),
 	}
 )
-
-func init() {
-	formatterMap["item"] = itemFormatter
-}
