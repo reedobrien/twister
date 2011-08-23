@@ -51,7 +51,7 @@ type Part struct {
 
 // ParseMultipartForm parses a multipart/form-data body. Form fields are added
 // to the request Param. This function loads the entire request body in memory.
-// If this is not apporpriate, then the application should use MultipartReader
+// If this is not appropriate, then the application should use MultipartReader
 // to read the request body incrementally.
 func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, os.Error) {
 	m, err := NewMultipartReader(req, maxRequestBodyLen)
@@ -106,7 +106,7 @@ type MultipartReader struct {
 
 var ErrNotMultipartFormData = os.NewError("twister: request not multipart/form-data")
 
-// NewMultipartReader returns a a multipart/form-data reader. 
+// NewMultipartReader returns a multipart/form-data reader. 
 func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, os.Error) {
 
 	if req.ContentType != "multipart/form-data" {

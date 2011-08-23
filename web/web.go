@@ -69,7 +69,7 @@ type Request struct {
 	// Header maps canonical header names to slices of header values.
 	Header Header
 
-	// Request params from the query string and post body.
+	// Request parameters from the query string and post body.
 	Param Values
 
 	// Cookies.

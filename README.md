@@ -8,8 +8,8 @@ What's in the Box?
 ------------------
 
 * Routing: Request to handler mapping with using regular expressions.
-* Utilities: Static file server, file uploads, cookies, form data, headers and other HTTP metadata.
-* Server: Production quality HTTP server and and adaptor for Google App Engine.
+* Utilities: Static file server, file uploads, cookies, form data, headers and other HTTP meta-data.
+* Server: Production quality HTTP server and adapter for Google App Engine.
 
 Hello, world
 ------------

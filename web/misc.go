@@ -146,7 +146,7 @@ func StatusText(status int) string {
 }
 
 // ProtocolVersion combines HTTP major and minor protocol numbers into a single
-// integer for easy comparision of protocol versions.
+// integer for easy comparison of protocol versions.
 func ProtocolVersion(major int, minor int) int {
 	if minor > 999 {
 		minor = 999
@@ -420,8 +420,9 @@ func HTMLEscapeString(s string) string {
 // a request where the cookie and request parameter are equal because the third
 // party site cannot access the cookie value.
 //
-// CheckXSRF returns an error if the request is not valid. It is the applications's 
-// responsiblity to respond to the request with an appropriate error.
+// CheckXSRF returns an error if the request is not valid. It is the
+// application's responsibility to respond to the request with an appropriate
+// error.
 //
 // Before returning, CheckXSRF ensures that the paramName request parameter is
 // set to the token. The application should use the value of the paramName
@@ -429,7 +430,7 @@ func HTMLEscapeString(s string) string {
 //
 // CheckXSRF also validates PUT and DELETE requests. 
 //
-// The X-XSRFToken can be used to specifiy the token in addition to the
+// The X-XSRFToken can be used to specify the token in addition to the
 // paramName request parameter.
 //
 // See http://en.wikipedia.org/wiki/Cross-site_request_forgery for information
@@ -444,7 +445,7 @@ func CheckXSRF(req *Request, cookieName string, paramName string) os.Error {
 		p := make([]byte, tokenLen/2)
 		_, err := rand.Reader.Read(p)
 		if err != nil {
-			panic("twister: rand read failed")
+            return err
 		}
 		expectedToken = hex.EncodeToString(p)
 		c := NewCookie(cookieName, expectedToken).String()

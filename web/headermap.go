@@ -114,7 +114,7 @@ func (m Header) GetValueParam(key string) (value string, param map[string]string
 
 // GetList returns list of comma separated values over multiple header values
 // for the given key. Commas are ignored in quoted strings. Quoted values are
-// not unescaped or unquoted. Whitespace is trimmmed.
+// not unescaped or unquoted. Whitespace is trimmed.
 func (m Header) GetList(key string) []string {
 	var result []string
 	for _, s := range m[key] {

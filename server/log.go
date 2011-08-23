@@ -31,7 +31,7 @@ type LogRecord struct {
 	// The request, possibly modified by handlers.
 	Request *web.Request
 
-	// Errors encoutered while handling request. 
+	// Errors encountered while handling request. 
 	Error os.Error
 
 	// Response status.

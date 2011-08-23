@@ -43,7 +43,7 @@ func credentialsCookie(name string, c *oauth.Credentials, maxAgeDays int) string
 		String()
 }
 
-// credentials returns oauth credentials stored in cookie with name key.
+// credentials returns OAuth credentials stored in cookie with name key.
 func credentials(req *web.Request, key string) (*oauth.Credentials, os.Error) {
 	s := req.Cookie.Get(key)
 	if s == "" {

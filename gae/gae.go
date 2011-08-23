@@ -84,7 +84,7 @@ func (h wrappedHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Handle registers handler for the given URL pattern. The documentation for
-// http.ServeMux explains how patterns are matched. Twister applicatons will
+// http.ServeMux explains how patterns are matched. Twister applications will
 // typically register a handler with the pattern "/".
 func Handle(pattern string, handler web.Handler) {
 	http.Handle(pattern, wrappedHandler{handler})

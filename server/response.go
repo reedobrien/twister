@@ -30,7 +30,7 @@ type responseBody interface {
 	finish() (int, os.Error)
 }
 
-// nullResponseBody discoards the response body.
+// nullResponseBody discards the response body.
 type nullResponseBody struct {
 	err     os.Error
 	written int

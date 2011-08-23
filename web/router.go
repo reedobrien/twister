@@ -31,7 +31,8 @@ import (
 //
 //  '<' name (':' regexp)? '>'
 //
-// If the regexp is not specified, then the regexp is set to to [^/]+.
+// If the regular expression is not specified, then the regular expression is
+// set to to [^/]+.
 //
 // The pattern must begin with the character '/'.
 //
@@ -42,7 +43,7 @@ import (
 // "*". If a handler is not found, the router responds with HTTP status 405. If
 // a route is not found, then the router responds with HTTP status 404.
 //
-// The handler can access the path parameters in the request Param.
+// The handler can access the path parameters in the request URLParam field.
 //
 // If a pattern ends with '/', then the router redirects the URL without the
 // trailing slash to the URL with the trailing slash.
@@ -60,8 +61,10 @@ type route struct {
 
 var parameterRegexp = regexp.MustCompile("<([A-Za-z0-9_]*)(:[^>]*)?>")
 
-// compilePattern compiles the pattern to a regexp and array of parameter names.
-func compilePattern(pattern string, addSlash bool, sep string) (*regexp.Regexp, []string) {
+// compilePattern compiles the pattern to a regular expression and array of
+// parameter names.
+func compilePattern(pattern string, addSlash bool, sep string) (*regexp.Regexp,
+[]string) {
 	var buf bytes.Buffer
 	names := make([]string, 8)
 	i := 0
@@ -100,7 +103,7 @@ func compilePattern(pattern string, addSlash bool, sep string) (*regexp.Regexp, 
 // Register the route with the given pattern and handlers. The structure of the
 // handlers argument is:
 //
-// (method handler)+
+//  (method handler)+
 //
 // where method is a string and handler is a Handler or a
 // func(*Request). Use "*" to match all methods.
@@ -212,8 +215,9 @@ func NewRouter() *Router {
 //
 //  '<' name (':' regexp)? '>'
 //
-// If the regexp is not specified, then the regexp is set to to [^.]+.  The
-// host router adds the parameters to the request Param.
+// If the regular expression is not specified, then the regular expression is
+// set to to [^.]+.  The host router adds the parameters to the request
+// URLParam field.
 type HostRouter struct {
 	defaultHandler Handler
 	routes         []hostRoute
