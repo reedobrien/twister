@@ -548,6 +548,7 @@ func (s *Server) serveConnection(conn net.Conn) {
 		if err := t.prepare(); err != nil {
 			if err != os.EOF {
 				log.Println("twister: prepare failed", err)
+				io.WriteString(conn, "HTTP/1.1 400 Bad Request\r\n\r\n")
 			}
 			break
 		}

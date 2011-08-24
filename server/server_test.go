@@ -128,6 +128,9 @@ var serverTests = []struct {
 	readAll bool
 	errs    []os.Error
 }{
+	{in: "Garbage\r\n",
+		out: "HTTP/1.1 400 Bad Request\r\n\r\n",
+	},
 	{
 		in:  "GET / HTTP/1.0\r\n\r\n",
 		out: "HTTP/1.0 200 OK\r\nConnection: close\r\n\r\n",
