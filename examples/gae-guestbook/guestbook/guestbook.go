@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-type Greeting struct {
+type greeting struct {
 	Author  string
 	Content string
 	Date    datastore.Time
@@ -44,8 +44,8 @@ wrote <blockquote>{Content|html}</blockquote>
 
 func handleMainPage(r *web.Request) {
 	c := gae.Context(r)
-	q := datastore.NewQuery("Greeting").Order("-Date").Limit(10)
-	var gg []*Greeting
+	q := datastore.NewQuery("greeting").Order("-Date").Limit(10)
+	var gg []*greeting
 	_, err := q.GetAll(c, &gg)
 	if err != nil {
 		r.Error(web.StatusInternalServerError, err)
@@ -61,14 +61,14 @@ func handleMainPage(r *web.Request) {
 
 func handleSign(r *web.Request) {
 	c := gae.Context(r)
-	g := &Greeting{
+	g := &greeting{
 		Content: r.Param.Get("content"),
 		Date:    datastore.SecondsToTime(time.Seconds()),
 	}
 	if u := user.Current(c); u != nil {
 		g.Author = u.String()
 	}
-	if _, err := datastore.Put(c, datastore.NewIncompleteKey("Greeting"), g); err != nil {
+	if _, err := datastore.Put(c, datastore.NewIncompleteKey("greeting"), g); err != nil {
 		r.Error(web.StatusInternalServerError, err)
 		return
 	}

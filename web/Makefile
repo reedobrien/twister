@@ -19,8 +19,9 @@ GOFILES=\
     misc.go\
     web.go\
     fs.go\
-    headermap.go\
-    parammap.go\
+    cookie.go\
+    header.go\
+    values.go\
     handlers.go\
     router.go\
     middleware.go\

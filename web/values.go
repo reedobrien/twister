@@ -26,7 +26,7 @@ type Values map[string][]string
 // NewValues returns a map initialized with the given key-value pairs.
 func NewValues(kvs ...string) Values {
 	if len(kvs)%2 == 1 {
-		panic("twister: even number args required for NewParam")
+		panic("twister: even number of args required for NewParam")
 	}
 	m := make(Values)
 	for i := 0; i < len(kvs); i += 2 {

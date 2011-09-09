@@ -21,29 +21,32 @@ import (
 	"url"
 )
 
-// Router dispatches HTTP requests to a handler using the path component of the
-// request URL and the request method.
+// Router is a request handler that dispatches HTTP requests to other handlers
+// using the request URL path and the request method.
 //
-// A router maintains a list of routes. A route consists of a request path
-// pattern and a collection of (method, handler) pairs.
+// A router has a list of routes. A route is a request path pattern and a
+// collection of (method, handler) pairs.
 //
-// A pattern is a string with embedded parameters. A parameter has the syntax:
+// A path pattern is a string with embedded parameters. A parameter has the syntax:
 //
-//  '<' name (':' regexp)? '>'
+//  '<' name (':' regular-expression)? '>'
 //
-// If the regular expression is not specified, then the regular expression is
-// set to to [^/]+.
+// If the regular expression is not specified, then the regular expression
+// [^/]+ is used.
 //
 // The pattern must begin with the character '/'.
 //
-// A router dispatches requests by matching the path component of the request
-// URL against the route patterns in the order that the routes were registered.
-// If a matching route is found, then the router searches the route for a
-// handler using the request method, "GET" if the request method is "HEAD" and
-// "*". If a handler is not found, the router responds with HTTP status 405. If
-// a route is not found, then the router responds with HTTP status 404.
+// A router dispatches requests by matching the request URL path against the
+// registered route patterns in the order that the routes were registered. If a
+// matching route is not found, then the router responds to the request with
+// HTTP status 404.
+// 
+// If a matching route is found, then the router looks for a handler using the 
+// request method, "GET" if the request method is "HEAD" and "*". If a handler
+// is not found, then the router responds to the request with HTTP status 405.
 //
-// The handler can access the path parameters in the request URLParam field.
+// Any matching parameters are in route pattern are stored in the in the
+// request URLParam field.
 //
 // If a pattern ends with '/', then the router redirects the URL without the
 // trailing slash to the URL with the trailing slash.
@@ -64,7 +67,7 @@ var parameterRegexp = regexp.MustCompile("<([A-Za-z0-9_]*)(:[^>]*)?>")
 // compilePattern compiles the pattern to a regular expression and array of
 // parameter names.
 func compilePattern(pattern string, addSlash bool, sep string) (*regexp.Regexp,
-[]string) {
+	[]string) {
 	var buf bytes.Buffer
 	names := make([]string, 8)
 	i := 0
@@ -204,20 +207,23 @@ func NewRouter() *Router {
 	return &Router{}
 }
 
-// HostRouter dispatches HTTP requests to a handler using the host HTTP header.
+// HostRouter is a request handler that dispatches HTTP requests to other handlers
+// using the host HTTP header.
 //
-// A host router maintains a list of routes where each route is a (pattern,
-// handler) pair.  The router dispatches requests by matching the host header
-// against the patterns in the order that the routes were registered. If a
-// matching route is found, the request is dispatched to the route's handler.
+// A host router has a list of routes where each route is a (pattern, handler)
+// pair.  The router dispatches requests by matching the host header against
+// the patterns in the order that the routes were registered. If a matching
+// route is found, the request is dispatched to the route's handler.
 //
 // A pattern is a string with embedded parameters. A parameter has the syntax:
 //
 //  '<' name (':' regexp)? '>'
 //
-// If the regular expression is not specified, then the regular expression is
-// set to to [^.]+.  The host router adds the parameters to the request
-// URLParam field.
+// If the regular expression is not specified, then the regular expression
+// [^.]+ is used.
+//
+// Any matching parameters are in route pattern are stored in the in the
+// request URLParam field.
 type HostRouter struct {
 	defaultHandler Handler
 	routes         []hostRoute

@@ -30,17 +30,17 @@ import (
 // ContentTypeHTML is the content type for UTF-8 encoded HTML.
 const ContentTypeHTML = "text/html; charset=\"utf-8\""
 
-// TimeLayout is the time layout used for HTTP headers and other values.
-const TimeLayout = "Mon, 02 Jan 2006 15:04:05 GMT"
+// timeLayout is the time layout used for HTTP headers and other values.
+const timeLayout = "Mon, 02 Jan 2006 15:04:05 GMT"
 
-// FormatDeltaSeconds returns current time plus delta formatted per HTTP conventions.
-func FormatDeltaSeconds(delta int) string {
-	return time.SecondsToUTC(time.Seconds() + int64(delta)).Format(TimeLayout)
+// formatDeltaSeconds returns current time plus delta formatted per HTTP conventions.
+func formatDeltaSeconds(delta int) string {
+	return time.SecondsToUTC(time.Seconds() + int64(delta)).Format(timeLayout)
 }
 
-// FormatDeltaDays returns current time plus delta formatted per HTTP conventions.
-func FormatDeltaDays(delta int) string {
-	return FormatDeltaSeconds(delta * 60 * 60 * 24)
+// formatDeltaDays returns current time plus delta formatted per HTTP conventions.
+func formatDeltaDays(delta int) string {
+	return formatDeltaSeconds(delta * 60 * 60 * 24)
 }
 
 var (
@@ -161,49 +161,6 @@ const (
 	ProtocolVersion11 = 1001 // HTTP/1.1
 )
 
-// parseCookieValues parses cookies from values and adds them to m. The
-// function supports the Netscape draft specification for cookies
-// (http://goo.gl/1WSx3). 
-func parseCookieValues(values []string, m Values) os.Error {
-	for _, s := range values {
-		key := ""
-		begin := 0
-		end := 0
-		for i := 0; i < len(s); i++ {
-			switch s[i] {
-			case ' ', '\t':
-				// leading whitespace?
-				if begin == end {
-					begin = i + 1
-					end = begin
-				}
-			case '=':
-				if key == "" {
-					key = s[begin:end]
-					begin = i + 1
-					end = begin
-				} else {
-					end += 1
-				}
-			case ';':
-				if len(key) > 0 && begin < end {
-					value := s[begin:end]
-					m.Add(key, value)
-				}
-				key = ""
-				begin = i + 1
-				end = begin
-			default:
-				end = i + 1
-			}
-		}
-		if len(key) > 0 && begin < end {
-			m.Add(key, s[begin:end])
-		}
-	}
-	return nil
-}
-
 func signature(secret, key, expiration, value string) string {
 	hm := hmac.NewSHA1([]byte(secret))
 	io.WriteString(hm, key)
@@ -271,105 +228,6 @@ func VerifyValue(secret, context string, signedValue string) (string, os.Error) 
 		return "", errVerificationFailure
 	}
 	return a[2], nil
-}
-
-// Cookie is a helper for constructing Set-Cookie header values. 
-// 
-// Cookie supports the ancient Netscape draft specification for cookies
-// (http://goo.gl/1WSx3) and the modern HttpOnly attribute
-// (http://www.owasp.org/index.php/HttpOnly). Cookie does not attempt to
-// support any RFC for cookies because the RFCs are not supported by popular
-// browsers.
-//
-// As a convenience, the NewCookie function returns a cookie with the path
-// attribute set to "/" and the httponly attribute set to true. 
-//
-// The following example shows how to set a cookie header using Cookie:
-//
-//  func myHandler(req *web.Request) {
-//      c := web.NewCookie("my-cookie-name", "my-cookie-value").String()
-//      w := req.Respond(web.StatusOK, web.HeaderSetCookie, c)
-//      io.WriteString(w, "<html><body>Hello</body></html>")
-//  }
-type Cookie struct {
-	name     string
-	value    string
-	path     string
-	domain   string
-	maxAge   int
-	secure   bool
-	httpOnly bool
-}
-
-// NewCookie returns a new cookie with the given name and value, the path
-// attribute set to "/" and the httponly attribute set to true.
-func NewCookie(name, value string) *Cookie {
-	return &Cookie{name: name, value: value, path: "/", httpOnly: true}
-}
-
-// Path sets the cookie path attribute. The path must either be "" or start with a
-// '/'.  The NewCookie function initializes the path to "/". If the path is "",
-// then the path attribute is not included in the header value. 
-func (c *Cookie) Path(path string) *Cookie { c.path = path; return c }
-
-// Domain sets the cookie domain attribute. If the host is "", then the domain
-// attribute is not included in the header value. 
-func (c *Cookie) Domain(domain string) *Cookie { c.domain = domain; return c }
-
-// MaxAge specifies the maximum age for a cookie. The age is converted to an
-// absolute expiration time when the header value is rendered. If the maximum
-// age is 0, then the expiration time is not included in the header value
-// and the browser will handle the cookie as a "session" cookie.
-func (c *Cookie) MaxAge(seconds int) *Cookie { c.maxAge = seconds; return c }
-
-// MaxAgeDays sets the maximum age for the cookie in days.
-func (c *Cookie) MaxAgeDays(days int) *Cookie { return c.MaxAge(days * 60 * 60 * 24) }
-
-// Delete sets the expiration date to a time in the past. 
-func (c *Cookie) Delete() *Cookie { return c.MaxAgeDays(-30).HTTPOnly(false) }
-
-// Secure sets the secure attribute. 
-func (c *Cookie) Secure(secure bool) *Cookie { c.secure = secure; return c }
-
-// HTTPOnly sets the httponly attribute. The NewCookie function
-// initializes the httponly attribute to true.
-func (c *Cookie) HTTPOnly(httpOnly bool) *Cookie {
-	c.httpOnly = httpOnly
-	return c
-}
-
-// String renders the Set-Cookie header value as a string.
-func (c *Cookie) String() string {
-	var buf bytes.Buffer
-
-	buf.WriteString(c.name)
-	buf.WriteByte('=')
-	buf.WriteString(c.value)
-
-	if c.path != "" {
-		buf.WriteString("; path=")
-		buf.WriteString(c.path)
-	}
-
-	if c.domain != "" {
-		buf.WriteString("; domain=")
-		buf.WriteString(c.domain)
-	}
-
-	if c.maxAge != 0 {
-		buf.WriteString("; expires=")
-		buf.WriteString(FormatDeltaSeconds(c.maxAge))
-	}
-
-	if c.secure {
-		buf.WriteString("; secure")
-	}
-
-	if c.httpOnly {
-		buf.WriteString("; HttpOnly")
-	}
-
-	return buf.String()
 }
 
 // HTMLEscapeString returns s with special HTML characters escaped. 
@@ -445,7 +303,7 @@ func CheckXSRF(req *Request, cookieName string, paramName string) os.Error {
 		p := make([]byte, tokenLen/2)
 		_, err := rand.Reader.Read(p)
 		if err != nil {
-            return err
+			return err
 		}
 		expectedToken = hex.EncodeToString(p)
 		c := NewCookie(cookieName, expectedToken).String()

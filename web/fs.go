@@ -115,7 +115,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 		}
 
 		const maxAge = 60 * 60 * 24 * 365 * 10
-		header.Set(HeaderExpires, FormatDeltaSeconds(maxAge))
+		header.Set(HeaderExpires, formatDeltaSeconds(maxAge))
 		header.Set(HeaderCacheControl, strings.Join(append(parts, "max-age="+strconv.Itoa(maxAge)), ", "))
 	}
 

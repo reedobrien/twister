@@ -15,37 +15,8 @@
 package web
 
 import (
-	"reflect"
 	"testing"
 )
-
-var ParseCookieValuesTests = []struct {
-	values []string
-	m      Values
-}{
-	{[]string{"a=b"}, Values{"a": []string{"b"}}},
-	{[]string{"a=b; c"}, Values{"a": []string{"b"}}},
-	{[]string{"a=b; =c"}, Values{"a": []string{"b"}}},
-	{[]string{"a=b; ; "}, Values{"a": []string{"b"}}},
-	{[]string{"a=b; c=d"}, Values{"a": []string{"b"}, "c": []string{"d"}}},
-	{[]string{"a=b; c=d"}, Values{"a": []string{"b"}, "c": []string{"d"}}},
-	{[]string{"a=b;c=d"}, Values{"a": []string{"b"}, "c": []string{"d"}}},
-	{[]string{" a=b;c=d "}, Values{"a": []string{"b"}, "c": []string{"d"}}},
-	{[]string{"a=b", "c=d"}, Values{"a": []string{"b"}, "c": []string{"d"}}},
-	{[]string{"a=b", "c=x=y"}, Values{"a": []string{"b"}, "c": []string{"x=y"}}},
-}
-
-func TestParseCookieValues(t *testing.T) {
-	for _, pt := range ParseCookieValuesTests {
-		m := make(Values)
-		if err := parseCookieValues(pt.values, m); err != nil {
-			t.Errorf("parseCookieValues(%q) error %q", pt.values, err)
-		}
-		if !reflect.DeepEqual(pt.m, m) {
-			t.Errorf("parseCookieValues(%q) = %q, want %q", pt.values, m, pt.m)
-		}
-	}
-}
 
 func TestSignValue(t *testing.T) {
 	secret := "7d1355a24a7bc1ad97a01f0252a5ba23e8b0aa366f1aa4d2c84b78ccdd6743a7"
