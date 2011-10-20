@@ -16,6 +16,7 @@ package web
 
 import (
 	"bytes"
+	"path"
 	"regexp"
 	"strings"
 	"url"
@@ -190,9 +191,26 @@ func (router *Router) find(path string, method string) (Handler, []string, []str
 	return routerError(StatusNotFound), nil, nil
 }
 
+func cleanUrlPath(p string) string {
+	if p == "" || p == "/" {
+		return "/"
+	}
+	slash := p[len(p)-1] == '/'
+	p = path.Clean(p)
+	if slash {
+		p += "/"
+	}
+	return p
+}
+
 // ServeWeb dispatches the request to a registered handler.
 func (router *Router) ServeWeb(req *Request) {
-	handler, names, values := router.find(req.URL.Path, req.Method)
+	p := cleanUrlPath(req.URL.Path)
+	if p != req.URL.Path {
+		req.Redirect(p, true)
+		return
+	}
+	handler, names, values := router.find(p, req.Method)
 	if req.URLParam == nil {
 		req.URLParam = make(map[string]string, len(values))
 	}
