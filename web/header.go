@@ -198,9 +198,15 @@ func (m Header) GetAccept(key string) []ValueParams {
 
 // WriteHttpHeader writes the map in HTTP header format.
 func (m Header) WriteHttpHeader(w io.Writer) os.Error {
-	for key, values := range m {
+	keys := make([]string, 0, len(m))
+	for key := range m {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	for _, key := range keys {
 		keyBytes := []byte(key)
-		for _, value := range values {
+		for _, value := range m[key] {
 			if _, err := w.Write(keyBytes); err != nil {
 				return err
 			}

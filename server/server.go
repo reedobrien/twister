@@ -381,7 +381,7 @@ func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 
 	if te := header.Get(web.HeaderTransferEncoding); te != "" {
 		log.Println("twister: transfer encoding not allowed")
-		header[web.HeaderTransferEncoding] = nil, false
+		delete(header, web.HeaderTransferEncoding)
 	}
 
 	if !t.requestConsumed {
@@ -396,8 +396,8 @@ func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 	contentLength := -1
 
 	if status == web.StatusNotModified {
-		header[web.HeaderContentType] = nil, false
-		header[web.HeaderContentLength] = nil, false
+		delete(header, web.HeaderContentType)
+		delete(header, web.HeaderContentLength)
 		t.chunkedResponse = false
 	} else if s := header.Get(web.HeaderContentLength); s != "" {
 		contentLength, _ = strconv.Atoi(s)

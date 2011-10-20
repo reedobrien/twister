@@ -24,7 +24,11 @@ func hub() {
 	for {
 		select {
 		case subscription := <-subscriptionChan:
-			conns[subscription.conn] = 0, subscription.subscribe
+			if subscription.subscribe {
+				conns[subscription.conn] = 0
+			} else {
+				delete(conns, subscription.conn)
+			}
 		case message := <-messageChan:
 			for conn, _ := range conns {
 				if err := conn.WriteMessage(message); err != nil {

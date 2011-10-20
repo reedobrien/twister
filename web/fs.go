@@ -78,7 +78,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 		// Clear entity headers.
 		for k, _ := range header {
 			if strings.HasPrefix(k, "Content-") {
-				header[k] = nil, false
+				delete(header, k)
 			}
 		}
 	} else {

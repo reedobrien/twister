@@ -129,7 +129,7 @@ func TestFileHandler(t *testing.T) {
 			t.Errorf("%s %s %v %v status=%d, want %d", tt.method, url, tt.options, tt.requestHeader, status, tt.status)
 		}
 
-		header[HeaderExpires] = nil, false
+		delete(header, HeaderExpires)
 		if !reflect.DeepEqual(header, tt.responseHeader) {
 			t.Errorf("%s %s %v %v header=%v, want %v", tt.method, url, tt.options, tt.requestHeader, header, tt.responseHeader)
 		}

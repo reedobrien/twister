@@ -44,11 +44,11 @@ func webRequestFromHTTPRequest(w http.ResponseWriter, r *http.Request) *web.Requ
 	header := web.Header(map[string][]string(r.Header))
 	foo := header.Get("Cookie")
 
-	if r.Referer != "" {
-		header.Set(web.HeaderReferer, r.Referer)
+	if r.Referer() != "" {
+		header.Set(web.HeaderReferer, r.Referer())
 	}
-	if r.UserAgent != "" {
-		header.Set(web.HeaderUserAgent, r.UserAgent)
+	if r.UserAgent() != "" {
+		header.Set(web.HeaderUserAgent, r.UserAgent())
 	}
 
 	req, _ := web.NewRequest(
@@ -65,7 +65,7 @@ func webRequestFromHTTPRequest(w http.ResponseWriter, r *http.Request) *web.Requ
 		req.Param = web.Values(map[string][]string(r.Form))
 	}
 
-	for _, c := range r.Cookie {
+	for _, c := range r.Cookies() {
 		req.Cookie.Add(c.Name, c.Value)
 	}
 
