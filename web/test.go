@@ -19,7 +19,6 @@ import (
 	"bytes"
 	"io"
 	"net"
-	"os"
 	"url"
 )
 
@@ -39,7 +38,7 @@ func (r testResponder) Respond(status int, header Header) io.Writer {
 	return testResponseBody{r.t}
 }
 
-func (r testResponder) Hijack() (net.Conn, *bufio.Reader, os.Error) {
+func (r testResponder) Hijack() (net.Conn, *bufio.Reader, error) {
 	return testConn{r.t}, bufio.NewReader(&bytes.Buffer{}), nil
 }
 
@@ -47,11 +46,11 @@ type testResponseBody struct {
 	t *testTransaction
 }
 
-func (b testResponseBody) Flush() os.Error {
+func (b testResponseBody) Flush() error {
 	return nil
 }
 
-func (b testResponseBody) Write(p []byte) (int, os.Error) {
+func (b testResponseBody) Write(p []byte) (int, error) {
 	return b.t.out.Write(p)
 }
 
@@ -59,15 +58,15 @@ type testConn struct {
 	t *testTransaction
 }
 
-func (c testConn) Read(b []byte) (int, os.Error) {
+func (c testConn) Read(b []byte) (int, error) {
 	return c.t.in.Read(b)
 }
 
-func (c testConn) Write(b []byte) (int, os.Error) {
+func (c testConn) Write(b []byte) (int, error) {
 	return c.t.out.Write(b)
 }
 
-func (c testConn) Close() os.Error {
+func (c testConn) Close() error {
 	return nil
 }
 
@@ -79,15 +78,15 @@ func (c testConn) RemoteAddr() net.Addr {
 	return testAddr("remote")
 }
 
-func (c testConn) SetTimeout(nsec int64) os.Error {
+func (c testConn) SetTimeout(nsec int64) error {
 	return nil
 }
 
-func (c testConn) SetReadTimeout(nsec int64) os.Error {
+func (c testConn) SetReadTimeout(nsec int64) error {
 	return nil
 }
 
-func (c testConn) SetWriteTimeout(nsec int64) os.Error {
+func (c testConn) SetWriteTimeout(nsec int64) error {
 	return nil
 }
 

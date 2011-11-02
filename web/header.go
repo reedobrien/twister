@@ -17,8 +17,8 @@ package web
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -58,10 +58,10 @@ func init() {
 }
 
 var (
-	ErrLineTooLong    = os.NewError("HTTP header line too long")
-	ErrBadHeaderLine  = os.NewError("could not parse HTTP header line")
-	ErrHeaderTooLong  = os.NewError("HTTP header value too long")
-	ErrHeadersTooLong = os.NewError("too many HTTP headers")
+	ErrLineTooLong    = errors.New("HTTP header line too long")
+	ErrBadHeaderLine  = errors.New("could not parse HTTP header line")
+	ErrHeaderTooLong  = errors.New("HTTP header value too long")
+	ErrHeadersTooLong = errors.New("too many HTTP headers")
 )
 
 // Header maps header names to a slice of header values. 
@@ -197,7 +197,7 @@ func (m Header) GetAccept(key string) []ValueParams {
 }
 
 // WriteHttpHeader writes the map in HTTP header format.
-func (m Header) WriteHttpHeader(w io.Writer) os.Error {
+func (m Header) WriteHttpHeader(w io.Writer) error {
 	keys := make([]string, 0, len(m))
 	for key := range m {
 		keys = append(keys, key)
@@ -235,7 +235,7 @@ func (m Header) WriteHttpHeader(w io.Writer) os.Error {
 
 // ParseHttpHeader parses the HTTP headers and appends the values to the
 // supplied map. Header names are converted to canonical format.
-func (m Header) ParseHttpHeader(br *bufio.Reader) (err os.Error) {
+func (m Header) ParseHttpHeader(br *bufio.Reader) (err error) {
 
 	const (
 		// Max size for header line
@@ -252,7 +252,7 @@ func (m Header) ParseHttpHeader(br *bufio.Reader) (err os.Error) {
 	for {
 		p, isPrefix, err := br.ReadLine()
 		switch {
-		case err == os.EOF:
+		case err == io.EOF:
 			return io.ErrUnexpectedEOF
 		case err != nil:
 			return err

@@ -57,7 +57,7 @@ type lazyResponder struct {
 	w   io.Writer
 }
 
-func (r lazyResponder) Write(p []byte) (int, os.Error) {
+func (r lazyResponder) Write(p []byte) (int, error) {
 	if r.w == nil {
 		r.w = r.req.Respond(web.StatusOK,
 			web.HeaderContentType, "application/octet-stream")
@@ -81,7 +81,7 @@ func serveProfile(req *web.Request) {
 func serveSymbol(req *web.Request) {
 	var p []byte
 	if req.Method == "POST" {
-		var err os.Error
+		var err error
 		p, err = req.BodyBytes(-1)
 		if err != nil {
 			req.Error(web.StatusInternalServerError, err)

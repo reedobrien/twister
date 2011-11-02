@@ -19,14 +19,13 @@ import (
 	"github.com/garyburd/twister/web"
 	"log"
 	"mime"
-	"os"
 	"path"
 	"template"
 )
 
 // itemFormatter formats a Facebook feed item by invoking the appropriate child
 // template.
-func itemFormatter(values ...interface{}) (interface{}, os.Error) {
+func itemFormatter(values ...interface{}) (interface{}, error) {
 	itemType := values[0].(map[string]interface{})["type"].(string)
 	t, ok := itemTemplates[itemType]
 	if !ok {

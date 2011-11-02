@@ -16,7 +16,6 @@ package web
 
 import (
 	"bytes"
-	"os"
 	"url"
 )
 
@@ -107,7 +106,7 @@ func dehex(c byte) byte {
 
 // ParseFormEncodedBytes parses the URL-encoded form and appends the values to
 // the supplied map. This function modifies the contents of p.
-func (m Values) ParseFormEncodedBytes(p []byte) os.Error {
+func (m Values) ParseFormEncodedBytes(p []byte) error {
 	key := ""
 	j := 0
 	for i := 0; i < len(p); {

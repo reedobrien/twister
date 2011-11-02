@@ -19,10 +19,10 @@ package gae
 import (
 	"appengine"
 	"bufio"
+	"errors"
 	"github.com/garyburd/twister/web"
 	"http"
 	"net"
-	"os"
 	"io"
 )
 
@@ -36,8 +36,8 @@ func (r responder) Respond(status int, header web.Header) io.Writer {
 	return r.w
 }
 
-func (r responder) Hijack() (conn net.Conn, br *bufio.Reader, err os.Error) {
-	return nil, nil, os.NewError("not implemented")
+func (r responder) Hijack() (conn net.Conn, br *bufio.Reader, err error) {
+	return nil, nil, errors.New("not implemented")
 }
 
 func webRequestFromHTTPRequest(w http.ResponseWriter, r *http.Request) *web.Request {

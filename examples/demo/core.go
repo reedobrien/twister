@@ -1,12 +1,12 @@
 package main
 
 import (
+	"errors"
 	"github.com/garyburd/twister/web"
-	"os"
 	"template"
 )
 
-func coreErrorHandler(req *web.Request, status int, reason os.Error, header web.Header) {
+func coreErrorHandler(req *web.Request, status int, reason error, header web.Header) {
 
 	coreTempl.Execute(
 		req.Responder.Respond(status, header),
@@ -20,7 +20,7 @@ func coreErrorHandler(req *web.Request, status int, reason os.Error, header web.
 
 func coreHandler(req *web.Request) {
 	if req.Param.Get("panic") == "before" {
-		panic(os.NewError("Panic Attack!"))
+		panic(errors.New("Panic Attack!"))
 	}
 	coreTempl.Execute(
 		req.Respond(web.StatusOK, web.HeaderContentType, "text/html"),
@@ -31,7 +31,7 @@ func coreHandler(req *web.Request) {
 			"xsrf":    req.Param.Get(web.XSRFParamName),
 		})
 	if req.Param.Get("panic") == "after" {
-		panic(os.NewError("Panic Attack!"))
+		panic(errors.New("Panic Attack!"))
 	}
 }
 

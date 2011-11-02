@@ -18,12 +18,12 @@ package web
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"io/ioutil"
 	"log"
 	"math"
 	"net"
-	"os"
 	"path"
 	"strconv"
 	"strings"
@@ -31,9 +31,9 @@ import (
 )
 
 var (
-	ErrInvalidState          = os.NewError("object in invalid state")
-	ErrBadFormat             = os.NewError("bad data format")
-	ErrRequestEntityTooLarge = os.NewError("HTTP request entity too large")
+	ErrInvalidState          = errors.New("object in invalid state")
+	ErrBadFormat             = errors.New("bad data format")
+	ErrRequestEntityTooLarge = errors.New("HTTP request entity too large")
 )
 
 // Responder represents the response.
@@ -46,7 +46,7 @@ type Responder interface {
 	// The caller is responsible for closing the connection. Returns connection
 	// and bufio Reader with any data that might be buffered by the server.
 	// Hijack is not supported by all servers.
-	Hijack() (conn net.Conn, br *bufio.Reader, err os.Error)
+	Hijack() (conn net.Conn, br *bufio.Reader, err error)
 }
 
 // Request represents an HTTP request to the server.
@@ -100,7 +100,7 @@ type Request struct {
 }
 
 // ErrorHandler handles request errors.
-type ErrorHandler func(req *Request, status int, reason os.Error, header Header)
+type ErrorHandler func(req *Request, status int, reason error, header Header)
 
 // Handler is the interface for web handlers.
 type Handler interface {
@@ -117,7 +117,7 @@ func (f HandlerFunc) ServeWeb(req *Request) { f(req) }
 
 // NewRequest allocates and initializes a request. This function is provided
 // for the convenience of protocol adapters (fcgi, native http server, ...).
-func NewRequest(remoteAddr string, method string, u *url.URL, protocolVersion int, header Header) (req *Request, err os.Error) {
+func NewRequest(remoteAddr string, method string, u *url.URL, protocolVersion int, header Header) (req *Request, err error) {
 	req = &Request{
 		RemoteAddr:      remoteAddr,
 		Method:          strings.ToUpper(method),
@@ -141,10 +141,10 @@ func NewRequest(remoteAddr string, method string, u *url.URL, protocolVersion in
 	}
 
 	if s := req.Header.Get(HeaderContentLength); s != "" {
-		var err os.Error
+		var err error
 		req.ContentLength, err = strconv.Atoi(s)
 		if err != nil {
-			return nil, os.NewError("bad content length")
+			return nil, errors.New("bad content length")
 		}
 	} else if method != "HEAD" && method != "GET" {
 		req.ContentLength = -1
@@ -161,7 +161,7 @@ func (req *Request) Respond(status int, headerKeysAndValues ...string) io.Writer
 	return req.Responder.Respond(status, NewHeader(headerKeysAndValues...))
 }
 
-func defaultErrorHandler(req *Request, status int, reason os.Error, header Header) {
+func defaultErrorHandler(req *Request, status int, reason error, header Header) {
 	header.Set(HeaderContentType, "text/plain; charset=utf-8")
 	w := req.Responder.Respond(status, header)
 	io.WriteString(w, StatusText(status))
@@ -171,7 +171,7 @@ func defaultErrorHandler(req *Request, status int, reason os.Error, header Heade
 }
 
 // Error responds to the request with an error. 
-func (req *Request) Error(status int, reason os.Error, headerKeysAndValues ...string) {
+func (req *Request) Error(status int, reason error, headerKeysAndValues ...string) {
 	req.ErrorHandler(req, status, reason, NewHeader(headerKeysAndValues...))
 }
 
@@ -197,7 +197,7 @@ func (req *Request) Redirect(urlStr string, perm bool, headerKeysAndValues ...st
 // BodyBytes returns the request body a slice of bytes. If maxLen is negative,
 // then no limit is imposed on the length of the body. If the body is longer
 // than maxLen, then ErrRequestEntityTooLarge is returned.
-func (req *Request) BodyBytes(maxLen int) ([]byte, os.Error) {
+func (req *Request) BodyBytes(maxLen int) ([]byte, error) {
 	var p []byte
 
 	if maxLen < 0 {
@@ -214,7 +214,7 @@ func (req *Request) BodyBytes(maxLen int) ([]byte, os.Error) {
 			return nil, err
 		}
 	} else {
-		var err os.Error
+		var err error
 		lr := io.LimitedReader{R: req.Body, N: int64(maxLen) + 1}
 		if p, err = ioutil.ReadAll(&lr); err != nil {
 			return nil, err
@@ -229,7 +229,7 @@ func (req *Request) BodyBytes(maxLen int) ([]byte, os.Error) {
 // ParseForm parses url-encoded form bodies. ParseForm is idempotent. Most
 // applications should use the FormHandler middleware instead of calling this
 // method directly.
-func (req *Request) ParseForm(maxRequestBodyLen int) os.Error {
+func (req *Request) ParseForm(maxRequestBodyLen int) error {
 	const key = "twister.web.formParsed"
 	if req.Env[key] != nil ||
 		req.ContentType != "application/x-www-form-urlencoded" ||
@@ -252,5 +252,5 @@ func (req *Request) ParseForm(maxRequestBodyLen int) os.Error {
 // flush buffered data to the network. Flush data to the network is useful for
 // implementing long polling and other Comet mechanisms. 
 type Flusher interface {
-	Flush() os.Error
+	Flush() error
 }

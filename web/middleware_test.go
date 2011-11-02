@@ -16,7 +16,6 @@ package web
 
 import (
 	"io"
-	"os"
 	"strings"
 	"testing"
 )
@@ -76,7 +75,7 @@ var xsrfTests = []struct {
 		status: StatusNotFound},
 }
 
-func xsrfErrorHandler(req *Request, status int, reason os.Error, header Header) {
+func xsrfErrorHandler(req *Request, status int, reason error, header Header) {
 	io.WriteString(req.Responder.Respond(status, header), req.Param.Get("xsrf"))
 }
 

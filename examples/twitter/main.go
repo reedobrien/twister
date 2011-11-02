@@ -15,6 +15,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/garyburd/twister/oauth"
@@ -24,7 +25,6 @@ import (
 	"io/ioutil"
 	"json"
 	"log"
-	"os"
 	"strings"
 	"template"
 	"url"
@@ -44,22 +44,22 @@ func credentialsCookie(name string, c *oauth.Credentials, maxAgeDays int) string
 }
 
 // credentials returns OAuth credentials stored in cookie with name key.
-func credentials(req *web.Request, key string) (*oauth.Credentials, os.Error) {
+func credentials(req *web.Request, key string) (*oauth.Credentials, error) {
 	s := req.Cookie.Get(key)
 	if s == "" {
-		return nil, os.NewError("main: missing cookie")
+		return nil, errors.New("main: missing cookie")
 	}
 	a := strings.Split(s, "/")
 	if len(a) != 2 {
-		return nil, os.NewError("main: bad credential cookie")
+		return nil, errors.New("main: bad credential cookie")
 	}
 	token, err := url.QueryUnescape(a[0])
 	if err != nil {
-		return nil, os.NewError("main: bad credential cookie")
+		return nil, errors.New("main: bad credential cookie")
 	}
 	secret, err := url.QueryUnescape(a[1])
 	if err != nil {
-		return nil, os.NewError("main: bad credential cookie")
+		return nil, errors.New("main: bad credential cookie")
 	}
 	return &oauth.Credentials{token, secret}, nil
 }
@@ -85,11 +85,11 @@ func authCallback(req *web.Request) {
 	}
 	s := req.Param.Get("oauth_token")
 	if s == "" {
-		req.Error(web.StatusNotFound, os.NewError("main: no token"))
+		req.Error(web.StatusNotFound, errors.New("main: no token"))
 		return
 	}
 	if s != temporaryCredentials.Token {
-		req.Error(web.StatusNotFound, os.NewError("main: token mismatch"))
+		req.Error(web.StatusNotFound, errors.New("main: token mismatch"))
 		return
 	}
 	tokenCredentials, _, err := oauthClient.RequestToken(http.DefaultClient, temporaryCredentials, req.Param.Get("oauth_verifier"))
@@ -127,7 +127,7 @@ func home(req *web.Request) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != 200 {
-		req.Error(web.StatusInternalServerError, os.NewError(fmt.Sprint("Status ", resp.StatusCode)))
+		req.Error(web.StatusInternalServerError, errors.New(fmt.Sprint("Status ", resp.StatusCode)))
 		return
 	}
 	var d interface{}

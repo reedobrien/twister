@@ -18,18 +18,18 @@ package server
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"github.com/garyburd/twister/web"
 	"io"
 	"log"
 	"net"
-	"os"
 	"runtime/debug"
 	"strconv"
 	"strings"
 	"url"
 )
 
-var errBadRequestLine = os.NewError("twister.server: could not parse request line")
+var errBadRequestLine = errors.New("twister.server: could not parse request line")
 
 // Server defines parameters for running an HTTP server.
 type Server struct {
@@ -84,10 +84,10 @@ type transaction struct {
 	hijacked           bool
 	req                *web.Request
 	requestAvail       int
-	requestErr         os.Error
+	requestErr         error
 	requestConsumed    bool
 	respondCalled      bool
-	responseErr        os.Error
+	responseErr        error
 	write100Continue   bool
 	status             int
 	header             web.Header
@@ -97,7 +97,7 @@ type transaction struct {
 var httpslash = []byte("HTTP/")
 
 // nextNum scans the next decimal number from p.
-func nextNum(p []byte) (n int, rest []byte, err os.Error) {
+func nextNum(p []byte) (n int, rest []byte, err error) {
 	for i, b := range p {
 		switch {
 		case '0' <= b && b <= '9':
@@ -118,7 +118,7 @@ func nextNum(p []byte) (n int, rest []byte, err os.Error) {
 }
 
 // nextWord scans to the next space in p.
-func nextWord(p []byte) (s string, rest []byte, err os.Error) {
+func nextWord(p []byte) (s string, rest []byte, err error) {
 	i := bytes.IndexByte(p, ' ')
 	if i < 0 {
 		err = errBadRequestLine
@@ -129,7 +129,7 @@ func nextWord(p []byte) (s string, rest []byte, err os.Error) {
 	return
 }
 
-func readRequestLine(b *bufio.Reader) (method string, urlStr string, version int, err os.Error) {
+func readRequestLine(b *bufio.Reader) (method string, urlStr string, version int, err error) {
 	var p []byte
 	var isPrefix bool
 
@@ -182,7 +182,7 @@ func readRequestLine(b *bufio.Reader) (method string, urlStr string, version int
 	return
 }
 
-func (t *transaction) prepare() (err os.Error) {
+func (t *transaction) prepare() (err error) {
 	method, urlStr, version, err := readRequestLine(t.br)
 	if err != nil {
 		return err
@@ -254,7 +254,7 @@ func (t *transaction) prepare() (err os.Error) {
 	return nil
 }
 
-func (t *transaction) checkRead() os.Error {
+func (t *transaction) checkRead() error {
 	if t.requestErr != nil {
 		if t.requestErr == web.ErrInvalidState {
 			log.Println("twister: Request Read after response started.")
@@ -270,12 +270,12 @@ func (t *transaction) checkRead() os.Error {
 
 type identityReader struct{ *transaction }
 
-func (t identityReader) Read(p []byte) (int, os.Error) {
+func (t identityReader) Read(p []byte) (int, error) {
 	if err := t.checkRead(); err != nil {
 		return 0, err
 	}
 	if t.requestAvail <= 0 {
-		t.requestErr = os.EOF
+		t.requestErr = io.EOF
 		return 0, t.requestErr
 	}
 	if len(p) > t.requestAvail {
@@ -292,7 +292,7 @@ func (t identityReader) Read(p []byte) (int, os.Error) {
 
 type chunkedReader struct{ *transaction }
 
-func (t chunkedReader) Read(p []byte) (n int, err os.Error) {
+func (t chunkedReader) Read(p []byte) (n int, err error) {
 	if err = t.checkRead(); err != nil {
 		return 0, err
 	}
@@ -302,7 +302,7 @@ func (t chunkedReader) Read(p []byte) (n int, err os.Error) {
 		t.requestAvail, t.requestErr = readChunkFraming(t.br, true)
 		if t.requestErr != nil {
 			return 0, t.requestErr
-			if t.requestErr == os.EOF {
+			if t.requestErr == io.EOF {
 				t.requestConsumed = true
 			}
 		}
@@ -318,14 +318,14 @@ func (t chunkedReader) Read(p []byte) (n int, err os.Error) {
 		// body encoding is consumed in case where the application reads
 		// exactly the number of bytes in the decoded body.
 		t.requestAvail, t.requestErr = readChunkFraming(t.br, false)
-		if t.requestErr == os.EOF {
+		if t.requestErr == io.EOF {
 			t.requestConsumed = true
 		}
 	}
 	return n, err
 }
 
-func readChunkFraming(br *bufio.Reader, first bool) (int, os.Error) {
+func readChunkFraming(br *bufio.Reader, first bool) (int, error) {
 	if !first {
 		// trailer from previous chunk
 		p := make([]byte, 2)
@@ -333,7 +333,7 @@ func readChunkFraming(br *bufio.Reader, first bool) (int, os.Error) {
 			return 0, err
 		}
 		if p[0] != '\r' && p[1] != '\n' {
-			return 0, os.NewError("twister: bad chunked format")
+			return 0, errors.New("twister: bad chunked format")
 		}
 	}
 
@@ -342,7 +342,7 @@ func readChunkFraming(br *bufio.Reader, first bool) (int, os.Error) {
 		return 0, err
 	}
 	if isPrefix {
-		return 0, os.NewError("twister: bad chunked format")
+		return 0, errors.New("twister: bad chunked format")
 	}
 	n, err := strconv.Btoui64(string(line), 16)
 	if err != nil {
@@ -355,10 +355,10 @@ func readChunkFraming(br *bufio.Reader, first bool) (int, os.Error) {
 				return 0, err
 			}
 			if isPrefix {
-				return 0, os.NewError("twister: bad chunked format")
+				return 0, errors.New("twister: bad chunked format")
 			}
 			if len(line) == 0 {
-				return 0, os.EOF
+				return 0, io.EOF
 			}
 		}
 	}
@@ -448,7 +448,7 @@ func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 	return t.responseBody
 }
 
-func (t *transaction) Hijack() (conn net.Conn, br *bufio.Reader, err os.Error) {
+func (t *transaction) Hijack() (conn net.Conn, br *bufio.Reader, err error) {
 	if t.respondCalled {
 		return nil, nil, web.ErrInvalidState
 	}
@@ -492,13 +492,13 @@ func (t *transaction) invokeHandler() {
 }
 
 // Finish the HTTP request
-func (t *transaction) finish() os.Error {
+func (t *transaction) finish() error {
 	if !t.respondCalled {
 		urlStr := "unknown"
 		if t.req != nil && t.req.URL != nil {
 			urlStr = t.req.URL.String()
 		}
-		return os.NewError("twister: handler did not call respond while serving " + urlStr)
+		return errors.New("twister: handler did not call respond while serving " + urlStr)
 	}
 	var written int
 	if t.responseErr == nil {
@@ -546,7 +546,7 @@ func (s *Server) serveConnection(conn net.Conn) {
 			conn:   conn,
 			br:     br}
 		if err := t.prepare(); err != nil {
-			if err != os.EOF {
+			if err != io.EOF {
 				log.Println("twister: prepare failed", err)
 				io.WriteString(conn, "HTTP/1.1 400 Bad Request\r\n\r\n")
 			}
@@ -600,7 +600,7 @@ func (s *Server) serveConnection(conn net.Conn) {
 //          log.Fatal("Server", err)
 //      }
 //  }
-func (s *Server) Serve() os.Error {
+func (s *Server) Serve() error {
 	for {
 		conn, e := s.Listener.Accept()
 		if e != nil {

@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"github.com/garyburd/twister/web"
+	"io"
 	"net"
 	"os"
 	"syscall"
@@ -35,16 +36,16 @@ func (a testAddr) String() string {
 	return string(a)
 }
 
-var defaultErrs = []os.Error{nil, os.EOF}
+var defaultErrs = []error{nil, io.EOF}
 
 type testListener struct {
 	in, out bytes.Buffer
 	done    chan bool
 	readAll bool
-	errs    []os.Error
+	errs    []error
 }
 
-func (l *testListener) Accept() (conn net.Conn, err os.Error) {
+func (l *testListener) Accept() (conn net.Conn, err error) {
 	err = l.errs[0]
 	if len(l.errs) > 1 {
 		l.errs = l.errs[1:]
@@ -52,7 +53,7 @@ func (l *testListener) Accept() (conn net.Conn, err os.Error) {
 	return testConn{l}, err
 }
 
-func (l *testListener) Close() os.Error {
+func (l *testListener) Close() error {
 	return nil
 }
 
@@ -64,19 +65,19 @@ type testConn struct {
 	*testListener
 }
 
-func (c testConn) Read(b []byte) (int, os.Error) {
+func (c testConn) Read(b []byte) (int, error) {
 	n, err := c.in.Read(b)
-	if err == os.EOF {
+	if err == io.EOF {
 		c.readAll = true
 	}
 	return n, err
 }
 
-func (c testConn) Write(b []byte) (int, os.Error) {
+func (c testConn) Write(b []byte) (int, error) {
 	return c.out.Write(b)
 }
 
-func (c testConn) Close() os.Error {
+func (c testConn) Close() error {
 	c.done <- true
 	return nil
 }
@@ -89,15 +90,15 @@ func (c testConn) RemoteAddr() net.Addr {
 	return testAddr("remote")
 }
 
-func (c testConn) SetTimeout(nsec int64) os.Error {
+func (c testConn) SetTimeout(nsec int64) error {
 	return nil
 }
 
-func (c testConn) SetReadTimeout(nsec int64) os.Error {
+func (c testConn) SetReadTimeout(nsec int64) error {
 	return nil
 }
 
-func (c testConn) SetWriteTimeout(nsec int64) os.Error {
+func (c testConn) SetWriteTimeout(nsec int64) error {
 	return nil
 }
 
@@ -126,7 +127,7 @@ var serverTests = []struct {
 	in      string
 	out     string
 	readAll bool
-	errs    []os.Error
+	errs    []error
 }{
 	{in: "Garbage\r\n",
 		out: "HTTP/1.1 400 Bad Request\r\n\r\n",
@@ -249,7 +250,7 @@ var serverTests = []struct {
 		in:      "GET /?w=Hello HTTP/1.1\r\n\r\n",
 		out:     "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n0005\r\nHello\r\n0\r\n\r\n",
 		readAll: true,
-		errs:    []os.Error{os.Errno(syscall.EINTR), nil, os.EOF},
+		errs:    []error{os.Errno(syscall.EINTR), nil, io.EOF},
 	},
 }
 
@@ -257,7 +258,7 @@ type silentLogger struct {
 	t *testing.T
 }
 
-func (l silentLogger) Write(p []byte) (int, os.Error) {
+func (l silentLogger) Write(p []byte) (int, error) {
 	l.t.Log(string(p))
 	return len(p), nil
 }
@@ -272,7 +273,7 @@ func TestServer(t *testing.T) {
 			l.errs = defaultErrs
 		}
 		err := (&Server{Listener: l, Handler: web.HandlerFunc(testHandler)}).Serve()
-		if err != os.EOF {
+		if err != io.EOF {
 			t.Errorf("Server() = %v", err)
 		}
 		<-l.done

@@ -15,6 +15,7 @@
 package web
 
 import (
+	"errors"
 	"io"
 	"mime"
 	"os"
@@ -159,7 +160,7 @@ func (dh *directoryHandler) ServeWeb(req *Request) {
 
 	fname = path.Clean(dh.root + fname)
 	if !strings.HasPrefix(fname, dh.root) {
-		req.Error(StatusNotFound, os.NewError("twister: DirectoryHandler access outside of root"))
+		req.Error(StatusNotFound, errors.New("twister: DirectoryHandler access outside of root"))
 		return
 	}
 

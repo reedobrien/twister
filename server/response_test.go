@@ -17,7 +17,6 @@ package server
 import (
 	"bytes"
 	"io"
-	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -52,9 +51,9 @@ var chunkedResponseTests = []struct {
 	{[]int{10, -1, 5, -1, 5, -1}, dots[:10] + "05\r\n" + dots[:5] + "\r\n05\r\n" + dots[:5] + "\r\n0\r\n\r\n"},
 }
 
-var writers = map[string]func(w io.Writer, s string) (int, os.Error){
-	"byte":   func(w io.Writer, s string) (int, os.Error) { return w.Write([]byte(s)) },
-	"string": func(w io.Writer, s string) (int, os.Error) { return io.WriteString(w, s) },
+var writers = map[string]func(w io.Writer, s string) (int, error){
+	"byte":   func(w io.Writer, s string) (int, error) { return w.Write([]byte(s)) },
+	"string": func(w io.Writer, s string) (int, error) { return io.WriteString(w, s) },
 }
 
 func TestChunkedResponse(t *testing.T) {
@@ -88,7 +87,7 @@ type addReaderFrom struct {
 	io.Writer
 }
 
-func (w addReaderFrom) ReadFrom(src io.Reader) (n int64, err os.Error) {
+func (w addReaderFrom) ReadFrom(src io.Reader) (n int64, err error) {
 	return io.Copy(w.Writer, src)
 }
 

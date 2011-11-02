@@ -19,10 +19,10 @@ import (
 	"bytes"
 	"crypto/md5"
 	"encoding/binary"
+	"errors"
 	"github.com/garyburd/twister/web"
 	"io"
 	"net"
-	"os"
 	"strings"
 )
 
@@ -39,7 +39,7 @@ type Conn struct {
 	hasMore bool
 }
 
-func (conn *Conn) Close() os.Error {
+func (conn *Conn) Close() error {
 	return conn.conn.Close()
 }
 
@@ -49,7 +49,7 @@ func (conn *Conn) Close() os.Error {
 // Upgrade, then the message is guaranteed to be returned in a single chunk.
 // The returned chunk points to the internal state of the connection and is only
 // valid until the next call to ReadMessage.
-func (conn *Conn) ReadMessage() (chunk []byte, hasMore bool, err os.Error) {
+func (conn *Conn) ReadMessage() (chunk []byte, hasMore bool, err error) {
 	// Support text framing for now. Revisit after browsers support framing
 	// described in later specs.
 
@@ -59,7 +59,7 @@ func (conn *Conn) ReadMessage() (chunk []byte, hasMore bool, err os.Error) {
 			return nil, false, err
 		}
 		if c != 0 {
-			return nil, false, os.NewError("twister.websocket: unexpected framing.")
+			return nil, false, errors.New("twister.websocket: unexpected framing.")
 		}
 	}
 
@@ -78,7 +78,7 @@ func (conn *Conn) ReadMessage() (chunk []byte, hasMore bool, err os.Error) {
 
 // WriteMessage write a message to the client. The message cannot contain the
 // bytes with value 0 or 255.
-func (conn *Conn) WriteMessage(p []byte) os.Error {
+func (conn *Conn) WriteMessage(p []byte) error {
 	// Support text framing for now. Revisit after browsers support framing
 	// described in later specs.
 	conn.bw.WriteByte(0)
@@ -88,10 +88,10 @@ func (conn *Conn) WriteMessage(p []byte) os.Error {
 }
 
 // webSocketKey returns the key bytes from the specified websocket key header.
-func webSocketKey(req *web.Request, name string) (key []byte, err os.Error) {
+func webSocketKey(req *web.Request, name string) (key []byte, err error) {
 	s := req.Header.Get(name)
 	if s == "" {
-		return key, os.NewError("twister.websocket: missing key")
+		return key, errors.New("twister.websocket: missing key")
 	}
 	var n uint32 // number formed from decimal digits in key
 	var d uint32 // number of spaces in key
@@ -104,7 +104,7 @@ func webSocketKey(req *web.Request, name string) (key []byte, err os.Error) {
 		}
 	}
 	if d == 0 || n%d != 0 {
-		return nil, os.NewError("twister.websocket: bad key")
+		return nil, errors.New("twister.websocket: bad key")
 	}
 	key = make([]byte, 4)
 	binary.BigEndian.PutUint32(key, n/d)
@@ -113,29 +113,29 @@ func webSocketKey(req *web.Request, name string) (key []byte, err os.Error) {
 
 // Upgrade upgrades the HTTP connection to the WebSocket protocol. The 
 // caller is responsible for closing the returned connection.
-func Upgrade(req *web.Request, readBufSize, writeBufSize int, header web.Header) (conn *Conn, err os.Error) {
+func Upgrade(req *web.Request, readBufSize, writeBufSize int, header web.Header) (conn *Conn, err error) {
 
 	if req.Method != "GET" {
 		req.Respond(web.StatusMethodNotAllowed)
-		return nil, os.NewError("twister.websocket: bad request method")
+		return nil, errors.New("twister.websocket: bad request method")
 	}
 
 	origin := req.Header.Get(web.HeaderOrigin)
 	if origin == "" {
 		req.Respond(web.StatusBadRequest)
-		return nil, os.NewError("twister.websocket: origin missing")
+		return nil, errors.New("twister.websocket: origin missing")
 	}
 
 	connection := strings.ToLower(req.Header.Get(web.HeaderConnection))
 	if connection != "upgrade" {
 		req.Respond(web.StatusBadRequest)
-		return nil, os.NewError("twister.websocket: connection header missing or wrong value")
+		return nil, errors.New("twister.websocket: connection header missing or wrong value")
 	}
 
 	upgrade := strings.ToLower(req.Header.Get(web.HeaderUpgrade))
 	if upgrade != "websocket" {
 		req.Respond(web.StatusBadRequest)
-		return nil, os.NewError("twister.websocket: upgrade header missing or wrong value")
+		return nil, errors.New("twister.websocket: upgrade header missing or wrong value")
 	}
 
 	key1, err := webSocketKey(req, headerSecWebSocketKey1)

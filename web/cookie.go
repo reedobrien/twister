@@ -16,14 +16,13 @@ package web
 
 import (
 	"bytes"
-	"os"
 	"strconv"
 )
 
 // parseCookieValues parses cookies from values and adds them to m. The
 // function supports the Netscape draft specification for cookies
 // (http://goo.gl/1WSx3). 
-func parseCookieValues(values []string, m Values) os.Error {
+func parseCookieValues(values []string, m Values) error {
 	for _, s := range values {
 		key := ""
 		begin := 0

@@ -17,15 +17,15 @@ package web
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
 	"math"
-	"os"
 )
 
 var scratch [1024]byte
 
-func skipReader(r io.Reader, n int) os.Error {
+func skipReader(r io.Reader, n int) error {
 	for n > 0 {
 		m := n
 		if m > len(scratch) {
@@ -53,7 +53,7 @@ type Part struct {
 // to the request Param. This function loads the entire request body in memory.
 // If this is not appropriate, then the application should use MultipartReader
 // to read the request body incrementally.
-func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, os.Error) {
+func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, error) {
 	m, err := NewMultipartReader(req, maxRequestBodyLen)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, os.Error) 
 	var buf bytes.Buffer
 	for {
 		header, r, err := m.Next()
-		if err == os.EOF {
+		if err == io.EOF {
 			break
 		} else if err != nil {
 			return nil, err
@@ -98,16 +98,16 @@ func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, os.Error) 
 // MultipartReader reads a multipart/form-data request body.
 type MultipartReader struct {
 	br       *bufio.Reader
-	err      os.Error
+	err      error
 	boundary []byte
 	avail    int
 	r        *partReader
 }
 
-var ErrNotMultipartFormData = os.NewError("twister: request not multipart/form-data")
+var ErrNotMultipartFormData = errors.New("twister: request not multipart/form-data")
 
 // NewMultipartReader returns a multipart/form-data reader. 
-func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, os.Error) {
+func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, error) {
 
 	if req.ContentType != "multipart/form-data" {
 		return nil, ErrNotMultipartFormData
@@ -115,11 +115,11 @@ func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, 
 
 	boundary := req.ContentParam["boundary"]
 	if boundary == "" {
-		return nil, os.NewError("twister: multipart/form-data boundary missing")
+		return nil, errors.New("twister: multipart/form-data boundary missing")
 	}
 
 	if len(boundary) > 512 {
-		return nil, os.NewError("twister: multipart/form-data boundary too long")
+		return nil, errors.New("twister: multipart/form-data boundary too long")
 	}
 
 	if maxRequestBodyLen < 0 {
@@ -144,7 +144,7 @@ func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, 
 	}
 
 	if isPrefix || !bytes.Equal(p, m.boundary[2:]) {
-		return nil, os.NewError("twister: multipart/form-data body malformed")
+		return nil, errors.New("twister: multipart/form-data body malformed")
 	}
 
 	return m, nil
@@ -152,7 +152,7 @@ func NewMultipartReader(req *Request, maxRequestBodyLen int) (*MultipartReader, 
 
 // Next returns the next part of a multipart/form-data body.  Next returns
 // os.EOF if no more parts remain. 
-func (m *MultipartReader) Next() (Header, io.Reader, os.Error) {
+func (m *MultipartReader) Next() (Header, io.Reader, error) {
 	if m.r != nil {
 		skipReader(m.r, math.MaxInt32)
 		m.r = nil
@@ -173,7 +173,7 @@ func (m *MultipartReader) Next() (Header, io.Reader, os.Error) {
 	return header, m.r, nil
 }
 
-func (m *MultipartReader) fill() os.Error {
+func (m *MultipartReader) fill() error {
 	if m.err != nil {
 		return m.err
 	}
@@ -189,7 +189,7 @@ func (m *MultipartReader) fill() os.Error {
 
 	// 4 = len("--\r\n")
 	if len(p) < len(m.boundary)+4 {
-		if err == nil || err == os.EOF {
+		if err == nil || err == io.EOF {
 			err = io.ErrUnexpectedEOF
 		}
 		m.err = err
@@ -202,12 +202,12 @@ func (m *MultipartReader) fill() os.Error {
 		switch {
 		case bytes.HasPrefix(p[len(m.boundary):], crlfBytes):
 			skipReader(m.br, len(m.boundary)+len(crlfBytes))
-			return os.EOF
+			return io.EOF
 		case bytes.HasPrefix(p[len(m.boundary):], dashDashCrlfBytes):
 			// Skip final boundary and up to 4096 bytes of junk following the boundary.
 			skipReader(m.br, len(m.boundary)+len(dashDashCrlfBytes)+4096)
-			m.err = os.EOF
-			return os.EOF
+			m.err = io.EOF
+			return io.EOF
 		default:
 			m.avail = len(m.boundary)
 		}
@@ -221,10 +221,10 @@ func (m *MultipartReader) fill() os.Error {
 
 type partReader struct {
 	m   *MultipartReader
-	err os.Error
+	err error
 }
 
-func (r *partReader) Read(p []byte) (int, os.Error) {
+func (r *partReader) Read(p []byte) (int, error) {
 	if r.err != nil {
 		return 0, r.err
 	}

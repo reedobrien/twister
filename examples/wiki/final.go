@@ -7,7 +7,6 @@ import (
 	"github.com/garyburd/twister/web"
 	"io/ioutil"
 	"log"
-	"os"
 	"template"
 )
 
@@ -16,12 +15,12 @@ type page struct {
 	Body  []byte
 }
 
-func (p *page) save() os.Error {
+func (p *page) save() error {
 	filename := p.Title + ".txt"
 	return ioutil.WriteFile(filename, p.Body, 0600)
 }
 
-func loadPage(title string) (*page, os.Error) {
+func loadPage(title string) (*page, error) {
 	filename := title + ".txt"
 	body, err := ioutil.ReadFile(filename)
 	if err != nil {

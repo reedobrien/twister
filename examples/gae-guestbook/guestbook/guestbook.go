@@ -10,7 +10,6 @@ import (
 	"github.com/garyburd/twister/gae"
 	"github.com/garyburd/twister/web"
 	"io"
-	"os"
 	"template"
 	"time"
 )
@@ -21,13 +20,13 @@ type greeting struct {
 	Date    datastore.Time
 }
 
-func serveError(req *web.Request, status int, reason os.Error, header web.Header) {
+func serveError(req *web.Request, status int, reason error, header web.Header) {
 	header.Set(web.HeaderContentType, "text/plain; charset=utf-8")
 	w := req.Responder.Respond(status, header)
 	io.WriteString(w, web.StatusText(status))
 	if reason != nil {
 		io.WriteString(w, "\n")
-		io.WriteString(w, reason.String())
+		io.WriteString(w, reason.Error())
 	}
 }
 

@@ -22,12 +22,12 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/garyburd/twister/web"
 	"http"
 	"io"
 	"io/ioutil"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -229,7 +229,7 @@ func (c *Client) SignParam(credentials *Credentials, method, urlStr string, para
 	p.Set("oauth_signature", signature(&c.Credentials, credentials, method, urlStr, param))
 }
 
-func (c *Client) request(client *http.Client, credentials *Credentials, urlStr string, param web.Values) (*Credentials, web.Values, os.Error) {
+func (c *Client) request(client *http.Client, credentials *Credentials, urlStr string, param web.Values) (*Credentials, web.Values, error) {
 	c.SignParam(credentials, "POST", urlStr, param)
 	resp, err := http.Post(urlStr, "application/x-www-form-urlencoded", bytes.NewBuffer(param.FormEncodedBytes()))
 	if err != nil {
@@ -241,7 +241,7 @@ func (c *Client) request(client *http.Client, credentials *Credentials, urlStr s
 		return nil, nil, err
 	}
 	if resp.StatusCode != 200 {
-		return nil, nil, os.NewError(fmt.Sprintf("OAuth server status %d, %s", resp.StatusCode, string(p)))
+		return nil, nil, errors.New(fmt.Sprintf("OAuth server status %d, %s", resp.StatusCode, string(p)))
 	}
 	m := make(web.Values)
 	err = m.ParseFormEncodedBytes(p)
@@ -250,16 +250,16 @@ func (c *Client) request(client *http.Client, credentials *Credentials, urlStr s
 	}
 	credentials = &Credentials{Token: m.Get("oauth_token"), Secret: m.Get("oauth_token_secret")}
 	if credentials.Token == "" {
-		return nil, nil, os.NewError("No OAuth token in server result")
+		return nil, nil, errors.New("No OAuth token in server result")
 	}
 	if credentials.Secret == "" {
-		return nil, nil, os.NewError("No OAuth secret in server result")
+		return nil, nil, errors.New("No OAuth secret in server result")
 	}
 	return credentials, m, nil
 }
 
 // RequestTemporaryCredentials requests temporary credentials from the server.
-func (c *Client) RequestTemporaryCredentials(client *http.Client, callbackURL string) (*Credentials, os.Error) {
+func (c *Client) RequestTemporaryCredentials(client *http.Client, callbackURL string) (*Credentials, error) {
 	m := make(web.Values)
 	if callbackURL != "" {
 		m.Set("oauth_callback", callbackURL)
@@ -269,7 +269,7 @@ func (c *Client) RequestTemporaryCredentials(client *http.Client, callbackURL st
 }
 
 // RequestToken requests token credentials from the server. 
-func (c *Client) RequestToken(client *http.Client, temporaryCredentials *Credentials, verifier string) (*Credentials, map[string]string, os.Error) {
+func (c *Client) RequestToken(client *http.Client, temporaryCredentials *Credentials, verifier string) (*Credentials, map[string]string, error) {
 	m := make(web.Values)
 	if verifier != "" {
 		m.Set("oauth_verifier", verifier)

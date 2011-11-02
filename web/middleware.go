@@ -15,8 +15,8 @@
 package web
 
 import (
+	"errors"
 	"io"
-	"os"
 )
 
 type filterResponder struct {
@@ -40,14 +40,14 @@ func SetErrorHandler(e ErrorHandler, h Handler) Handler {
 	return HandlerFunc(func(req *Request) {
 		defer func() {
 			if r := recover(); r != nil {
-				var err os.Error
+				var err error
 				switch r := r.(type) {
 				case string:
-					err = os.NewError(r)
-				case os.Error:
+					err = errors.New(r)
+				case error:
 					err = r
 				default:
-					err = os.NewError("unknown")
+					err = errors.New("unknown")
 				}
 				e(req, StatusInternalServerError, err, NewHeader())
 				panic(r)
@@ -154,7 +154,7 @@ func (h formHandler) ServeWeb(req *Request) {
 				status = StatusExpectationFailed
 			}
 		}
-		req.Error(status, os.NewError("twister: Error reading or parsing form."))
+		req.Error(status, errors.New("twister: Error reading or parsing form."))
 		return
 	}
 

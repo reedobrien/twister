@@ -20,8 +20,8 @@ import (
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/hex"
+	"errors"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -201,11 +201,11 @@ func SignValue(secret, context string, maxAgeSeconds int, value string) string {
 	return sig + "~" + expiration + "~" + value
 }
 
-var errVerificationFailure = os.NewError("verification failed")
+var errVerificationFailure = errors.New("verification failed")
 
 // VerifyValue extracts a value from a string created by SignValue. An error is
 // returned if the expiration time has elapsed or the signature is not correct.
-func VerifyValue(secret, context string, signedValue string) (string, os.Error) {
+func VerifyValue(secret, context string, signedValue string) (string, error) {
 	a := strings.SplitN(signedValue, "~", 3)
 	if len(a) != 3 {
 		return "", errVerificationFailure
@@ -293,7 +293,7 @@ func HTMLEscapeString(s string) string {
 //
 // See http://en.wikipedia.org/wiki/Cross-site_request_forgery for information
 // on cross-site request forgery.
-func CheckXSRF(req *Request, cookieName string, paramName string) os.Error {
+func CheckXSRF(req *Request, cookieName string, paramName string) error {
 
 	const tokenLen = 8
 	expectedToken := req.Cookie.Get(cookieName)
@@ -323,9 +323,9 @@ func CheckXSRF(req *Request, cookieName string, paramName string) os.Error {
 		if req.Method == "POST" ||
 			req.Method == "PUT" ||
 			req.Method == "DELETE" {
-			err := os.NewError("twister: bad xsrf token")
+			err := errors.New("twister: bad xsrf token")
 			if actualToken == "" {
-				err = os.NewError("twister: missing xsrf token")
+				err = errors.New("twister: missing xsrf token")
 			}
 			return err
 		}

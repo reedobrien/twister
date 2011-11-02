@@ -19,6 +19,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/garyburd/twister/server"
@@ -27,7 +28,6 @@ import (
 	"io/ioutil"
 	"json"
 	"log"
-	"os"
 	"strconv"
 	"url"
 )
@@ -36,7 +36,7 @@ var appID string
 var appSecret string
 
 // getUrlEncodedForm fetches a URL and decodes the response body as a URL encoded form.
-func getUrlEncodedForm(urlStr string, param web.Values) (web.Values, os.Error) {
+func getUrlEncodedForm(urlStr string, param web.Values) (web.Values, error) {
 	if param != nil {
 		urlStr = urlStr + "?" + param.FormEncodedString()
 	}
@@ -46,7 +46,7 @@ func getUrlEncodedForm(urlStr string, param web.Values) (web.Values, os.Error) {
 	}
 	defer r.Body.Close()
 	if r.StatusCode != 200 {
-		return nil, os.NewError(fmt.Sprint("Status ", r.StatusCode))
+		return nil, errors.New(fmt.Sprint("Status ", r.StatusCode))
 	}
 	p, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -61,7 +61,7 @@ func getUrlEncodedForm(urlStr string, param web.Values) (web.Values, os.Error) {
 }
 
 // getJSON fetches a URL and decodes the response body as JSON.
-func getJSON(urlStr string, param web.Values) (interface{}, os.Error) {
+func getJSON(urlStr string, param web.Values) (interface{}, error) {
 	if param != nil {
 		urlStr = urlStr + "?" + param.FormEncodedString()
 	}
@@ -71,7 +71,7 @@ func getJSON(urlStr string, param web.Values) (interface{}, os.Error) {
 	}
 	defer r.Body.Close()
 	if r.StatusCode != 200 {
-		return nil, os.NewError(fmt.Sprint("Status ", r.StatusCode))
+		return nil, errors.New(fmt.Sprint("Status ", r.StatusCode))
 	}
 	p, _ := ioutil.ReadAll(r.Body)
 	var v interface{}
@@ -83,14 +83,14 @@ func getJSON(urlStr string, param web.Values) (interface{}, os.Error) {
 }
 
 // acccessToken returns OAuth2 access token stored in a cookie.
-func accessToken(req *web.Request) (string, os.Error) {
+func accessToken(req *web.Request) (string, error) {
 	s := req.Cookie.Get("fbtok")
 	if s == "" {
-		return "", os.NewError("main: missing cookie")
+		return "", errors.New("main: missing cookie")
 	}
 	token, err := url.QueryUnescape(s)
 	if err != nil {
-		return "", os.NewError("main: bad credential cookie")
+		return "", errors.New("main: bad credential cookie")
 	}
 	return token, nil
 }

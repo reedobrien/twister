@@ -58,9 +58,9 @@ func Publish(name string, v interface{}) {
 // The MarshalJSONFunc type is an adapter to allow the use of ordinary
 // functions as JSON marshallers. The function is called each time the object
 // is marshaled.
-type MarshalJSONFunc func() ([]byte, os.Error)
+type MarshalJSONFunc func() ([]byte, error)
 
-func (f MarshalJSONFunc) MarshalJSON() ([]byte, os.Error) {
+func (f MarshalJSONFunc) MarshalJSON() ([]byte, error) {
 	return f()
 }
 
@@ -68,7 +68,7 @@ func (f MarshalJSONFunc) MarshalJSON() ([]byte, os.Error) {
 // value. The function is called each time the object is marshaled.
 type Func func() interface{}
 
-func (f Func) MarshalJSON() ([]byte, os.Error) {
+func (f Func) MarshalJSON() ([]byte, error) {
 	return json.Marshal(f())
 }
 
@@ -86,7 +86,7 @@ func NewMap(name string) *Map {
 	return m
 }
 
-func (m *Map) MarshalJSON() ([]byte, os.Error) {
+func (m *Map) MarshalJSON() ([]byte, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return json.Marshal(m.m)
@@ -131,7 +131,7 @@ type Int struct {
 	mu sync.Mutex
 }
 
-func (i *Int) MarshalJSON() ([]byte, os.Error) {
+func (i *Int) MarshalJSON() ([]byte, error) {
 	return []byte(strconv.Itoa64(i.i)), nil
 }
 

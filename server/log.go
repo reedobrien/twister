@@ -21,7 +21,6 @@ import (
 	"io"
 	"log"
 	"net"
-	"os"
 	"sync"
 	"time"
 )
@@ -32,7 +31,7 @@ type LogRecord struct {
 	Request *web.Request
 
 	// Errors encountered while handling request. 
-	Error os.Error
+	Error error
 
 	// Response status.
 	Status int
@@ -134,7 +133,7 @@ func (acl *ApacheCombinedLogger) Log(lr *LogRecord) {
 
 	host, _, err := net.SplitHostPort(lr.Request.RemoteAddr)
 	if err != nil {
-		log.Print(fmt.Sprintf("Failed to resolve \"%s\": %s", lr.Request.RemoteAddr, err.String()))
+		log.Print(fmt.Sprintf("Failed to resolve \"%s\": %s", lr.Request.RemoteAddr, err.Error()))
 		return
 	}
 

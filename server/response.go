@@ -16,9 +16,9 @@ package server
 
 import (
 	"bufio"
+	"errors"
 	"github.com/garyburd/twister/web"
 	"io"
-	"os"
 )
 
 type responseBody interface {
@@ -27,40 +27,40 @@ type responseBody interface {
 
 	// finish the response body and return an error if the connection should be
 	// closed due to a write error.
-	finish() (int, os.Error)
+	finish() (int, error)
 }
 
 // nullResponseBody discards the response body.
 type nullResponseBody struct {
-	err     os.Error
+	err     error
 	written int
 }
 
-func newNullResponseBody(wr io.Writer, header []byte) (*nullResponseBody, os.Error) {
+func newNullResponseBody(wr io.Writer, header []byte) (*nullResponseBody, error) {
 	w := &nullResponseBody{}
 	w.written, w.err = wr.Write(header)
 	return w, w.err
 }
 
-func (w *nullResponseBody) Write(p []byte) (int, os.Error) {
+func (w *nullResponseBody) Write(p []byte) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
 	return len(p), nil
 }
 
-func (w *nullResponseBody) WriteString(p string) (int, os.Error) {
+func (w *nullResponseBody) WriteString(p string) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
 	return len(p), nil
 }
 
-func (w *nullResponseBody) Flush() os.Error {
+func (w *nullResponseBody) Flush() error {
 	return w.err
 }
 
-func (w *nullResponseBody) finish() (int, os.Error) {
+func (w *nullResponseBody) finish() (int, error) {
 	err := w.err
 	if w.err == nil {
 		w.err = web.ErrInvalidState
@@ -70,7 +70,7 @@ func (w *nullResponseBody) finish() (int, os.Error) {
 
 // identityResponseBody implements identity encoding of the response body. 
 type identityResponseBody struct {
-	err os.Error
+	err error
 	bw  *bufio.Writer
 	wr  io.Writer
 
@@ -84,7 +84,7 @@ type identityResponseBody struct {
 	headerWritten int
 }
 
-func newIdentityResponseBody(wr io.Writer, header []byte, bufferSize, contentLength int) (*identityResponseBody, os.Error) {
+func newIdentityResponseBody(wr io.Writer, header []byte, bufferSize, contentLength int) (*identityResponseBody, error) {
 	w := &identityResponseBody{wr: wr, contentLength: contentLength}
 
 	w.bw, w.err = bufio.NewWriterSize(wr, bufferSize)
@@ -98,7 +98,7 @@ func newIdentityResponseBody(wr io.Writer, header []byte, bufferSize, contentLen
 
 type writerOnly struct{ io.Writer }
 
-func (w *identityResponseBody) ReadFrom(src io.Reader) (n int64, err os.Error) {
+func (w *identityResponseBody) ReadFrom(src io.Reader) (n int64, err error) {
 	if rf, ok := w.wr.(io.ReaderFrom); ok {
 		err = w.bw.Flush()
 		if err != nil {
@@ -113,7 +113,7 @@ func (w *identityResponseBody) ReadFrom(src io.Reader) (n int64, err os.Error) {
 	return io.Copy(writerOnly{w}, src)
 }
 
-func (w *identityResponseBody) Write(p []byte) (int, os.Error) {
+func (w *identityResponseBody) Write(p []byte) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
@@ -121,12 +121,12 @@ func (w *identityResponseBody) Write(p []byte) (int, os.Error) {
 	n, w.err = w.bw.Write(p)
 	w.written += n
 	if w.err == nil && w.contentLength >= 0 && w.written > w.contentLength {
-		w.err = os.NewError("twister: long write by handler")
+		w.err = errors.New("twister: long write by handler")
 	}
 	return n, w.err
 }
 
-func (w *identityResponseBody) WriteString(p string) (int, os.Error) {
+func (w *identityResponseBody) WriteString(p string) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
@@ -134,12 +134,12 @@ func (w *identityResponseBody) WriteString(p string) (int, os.Error) {
 	n, w.err = w.bw.WriteString(p)
 	w.written += n
 	if w.err == nil && w.contentLength >= 0 && w.written > w.contentLength {
-		w.err = os.NewError("twister: long write by handler")
+		w.err = errors.New("twister: long write by handler")
 	}
 	return n, w.err
 }
 
-func (w *identityResponseBody) Flush() os.Error {
+func (w *identityResponseBody) Flush() error {
 	if w.err != nil {
 		return w.err
 	}
@@ -147,13 +147,13 @@ func (w *identityResponseBody) Flush() os.Error {
 	return w.err
 }
 
-func (w *identityResponseBody) finish() (int, os.Error) {
+func (w *identityResponseBody) finish() (int, error) {
 	w.Flush()
 	if w.err != nil {
 		return w.headerWritten + w.written, w.err
 	}
 	if w.contentLength >= 0 && w.written < w.contentLength {
-		w.err = os.NewError("twister: short write by handler")
+		w.err = errors.New("twister: short write by handler")
 	}
 	err := w.err
 	if w.err == nil {
@@ -163,7 +163,7 @@ func (w *identityResponseBody) finish() (int, os.Error) {
 }
 
 type chunkedResponseBody struct {
-	err     os.Error  // error from wr
+	err     error     // error from wr
 	wr      io.Writer // write here
 	buf     []byte    // buffered output
 	s       int       // start of chunk in buf 
@@ -172,7 +172,7 @@ type chunkedResponseBody struct {
 	written int
 }
 
-func newChunkedResponseBody(wr io.Writer, header []byte, bufferSize int) (*chunkedResponseBody, os.Error) {
+func newChunkedResponseBody(wr io.Writer, header []byte, bufferSize int) (*chunkedResponseBody, error) {
 	w := &chunkedResponseBody{wr: wr, buf: make([]byte, bufferSize)}
 
 	for n := int32(bufferSize); n != 0; n >>= 4 {
@@ -222,7 +222,7 @@ func (w *chunkedResponseBody) finalizeChunk() {
 }
 
 // Flush writes any buffered data to the underlying io.Writer.
-func (w *chunkedResponseBody) Flush() os.Error {
+func (w *chunkedResponseBody) Flush() error {
 	if w.err != nil {
 		return w.err
 	}
@@ -238,7 +238,7 @@ func (w *chunkedResponseBody) Flush() os.Error {
 	return nil
 }
 
-func (w *chunkedResponseBody) finish() (int, os.Error) {
+func (w *chunkedResponseBody) finish() (int, error) {
 	if w.err != nil {
 		return w.written, w.err
 	}
@@ -276,7 +276,7 @@ func (w *chunkedResponseBody) ncopy(max int) int {
 	return n
 }
 
-func (w *chunkedResponseBody) Write(p []byte) (int, os.Error) {
+func (w *chunkedResponseBody) Write(p []byte) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
@@ -294,7 +294,7 @@ func (w *chunkedResponseBody) Write(p []byte) (int, os.Error) {
 	return nn, w.err
 }
 
-func (w *chunkedResponseBody) WriteString(p string) (int, os.Error) {
+func (w *chunkedResponseBody) WriteString(p string) (int, error) {
 	if w.err != nil {
 		return 0, w.err
 	}
