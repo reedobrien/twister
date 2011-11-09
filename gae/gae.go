@@ -21,9 +21,9 @@ import (
 	"bufio"
 	"errors"
 	"github.com/garyburd/twister/web"
-	"http"
-	"net"
 	"io"
+	"net"
+	"net/http"
 )
 
 type responder struct{ w http.ResponseWriter }

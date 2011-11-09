@@ -27,8 +27,8 @@
 package expvar
 
 import (
+	"encoding/json"
 	"github.com/garyburd/twister/web"
-	"json"
 	"log"
 	"os"
 	"runtime"

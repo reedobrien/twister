@@ -16,10 +16,10 @@ package web
 
 import (
 	"bytes"
+	"net/url"
 	"path"
 	"regexp"
 	"strings"
-	"url"
 )
 
 // Router is a request handler that dispatches HTTP requests to other handlers

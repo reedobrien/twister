@@ -16,7 +16,7 @@ package web
 
 import (
 	"bytes"
-	"url"
+	"net/url"
 )
 
 // Values maps names to slices of values.

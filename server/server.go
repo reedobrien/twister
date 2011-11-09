@@ -23,10 +23,10 @@ import (
 	"io"
 	"log"
 	"net"
+	"net/url"
 	"runtime/debug"
 	"strconv"
 	"strings"
-	"url"
 )
 
 var errBadRequestLine = errors.New("twister.server: could not parse request line")

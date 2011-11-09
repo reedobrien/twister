@@ -7,7 +7,7 @@ import (
 	"github.com/garyburd/twister/web"
 	"io/ioutil"
 	"log"
-	"template"
+	"text/template"
 )
 
 type page struct {

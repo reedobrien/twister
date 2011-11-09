@@ -19,17 +19,17 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"github.com/garyburd/twister/server"
 	"github.com/garyburd/twister/web"
-	"http"
 	"io/ioutil"
-	"json"
 	"log"
+	"net/http"
+	"net/url"
 	"strconv"
-	"url"
 )
 
 var appID string

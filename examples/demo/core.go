@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"github.com/garyburd/twister/web"
-	"template"
+	"text/template"
 )
 
 func coreErrorHandler(req *web.Request, status int, reason error, header web.Header) {

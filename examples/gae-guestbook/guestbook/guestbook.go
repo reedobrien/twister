@@ -10,7 +10,7 @@ import (
 	"github.com/garyburd/twister/gae"
 	"github.com/garyburd/twister/web"
 	"io"
-	"template"
+	"text/template"
 	"time"
 )
 

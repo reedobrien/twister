@@ -15,10 +15,10 @@
 package web
 
 import (
+	"net/url"
 	"reflect"
 	"strings"
 	"testing"
-	"url"
 )
 
 var multiPartTests = []struct {

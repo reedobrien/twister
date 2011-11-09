@@ -19,7 +19,7 @@ import (
 	"bytes"
 	"io"
 	"net"
-	"url"
+	"net/url"
 )
 
 type testTransaction struct {

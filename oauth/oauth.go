@@ -25,15 +25,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/garyburd/twister/web"
-	"http"
 	"io"
 	"io/ioutil"
+	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"url"
 )
 
 var noEscape = [256]bool{
