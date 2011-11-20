@@ -438,7 +438,7 @@ func (t *transaction) Respond(status int, header web.Header) (body io.Writer) {
 
 	const bufferSize = 4096
 	switch {
-	case t.req.Method == "HEAD":
+	case t.req.Method == "HEAD" || status == web.StatusNotModified:
 		t.responseBody, _ = newNullResponseBody(t.conn, b.Bytes())
 	case t.chunkedResponse:
 		t.responseBody, _ = newChunkedResponseBody(t.conn, b.Bytes(), bufferSize)
