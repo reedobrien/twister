@@ -58,7 +58,7 @@ func ParseMultipartForm(req *Request, maxRequestBodyLen int) ([]Part, error) {
 	if err != nil {
 		return nil, err
 	}
-	var parts []Part
+	parts := make([]Part, 0)
 	var buf bytes.Buffer
 	for {
 		header, r, err := m.Next()

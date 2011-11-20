@@ -248,10 +248,10 @@ func HTMLEscapeString(s string) string {
 		case '"':
 			b.WriteString("&quot;")
 		case '\'':
-			// &apos; is not defined in the HTML standard
+			// &apos; is not defined in the HTML standard.
 			b.WriteString("&#x27;")
 		case '/':
-			// forward slash is included as it helps end an HTML entity
+			// forward slash is included as it helps end an HTML entity.
 			b.WriteString("&#x2F;")
 		case '&':
 			b.WriteString("&amp;")

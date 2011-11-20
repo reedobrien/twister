@@ -19,11 +19,10 @@ import (
 	"bytes"
 	"github.com/garyburd/twister/web"
 	"io"
+	"log"
 	"net"
 	"os"
-	"syscall"
 	"testing"
-	"log"
 )
 
 type testAddr string
@@ -250,7 +249,7 @@ var serverTests = []struct {
 		in:      "GET /?w=Hello HTTP/1.1\r\n\r\n",
 		out:     "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n0005\r\nHello\r\n0\r\n\r\n",
 		readAll: true,
-		errs:    []error{os.Errno(syscall.EINTR), nil, io.EOF},
+		errs:    []error{os.EINTR, nil, io.EOF},
 	},
 }
 
