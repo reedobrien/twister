@@ -1,63 +1,98 @@
 package main
 
 import (
+	"errors"
 	"flag"
+	"github.com/garyburd/twister/adapter"
 	"github.com/garyburd/twister/expvar"
 	"github.com/garyburd/twister/pprof"
 	"github.com/garyburd/twister/server"
 	"github.com/garyburd/twister/web"
 	"log"
 	"net"
+	"net/http"
 	"text/template"
 )
 
-func homeHandler(req *web.Request) {
-	homeTempl.Execute(
-		req.Respond(web.StatusOK, web.HeaderContentType, "text/html"),
-		req)
+func xsrf(req *web.Request) string {
+	if req == nil {
+		return ""
+	}
+	return req.Param.Get(web.XSRFParamName)
 }
+
+var tmpl = template.Must(template.New("home").Funcs(template.FuncMap{"xsrf": xsrf}).ParseFile("home.html"))
+
+func handler(req *web.Request) {
+	w := req.Respond(web.StatusOK, web.HeaderContentType, "text/html; charset=utf-8")
+	if err := tmpl.Execute(w, map[string]interface{}{"req": req}); err != nil {
+		log.Print(err)
+	}
+}
+
+func errorHandler(req *web.Request, status int, reason error, header web.Header) {
+	w := req.Responder.Respond(status, header)
+	if err := tmpl.Execute(w, map[string]interface{}{"req": req, "status": status, "reason": reason}); err != nil {
+		log.Print(err)
+	}
+}
+
+func panicBeforeResponse(req *web.Request) {
+	panic(errors.New("Panic Attack!"))
+	handler(req)
+}
+
+func panicAfterResponse(req *web.Request) {
+	handler(req)
+	panic(errors.New("Panic Attack!"))
+}
+
+func multipartHandler(req *web.Request) {
+	files, err := web.ParseMultipartForm(req, -1)
+	if err != nil {
+		req.Error(web.StatusBadRequest, err)
+		return
+	}
+	w := req.Respond(web.StatusOK, web.HeaderContentType, "text/html; charset=utf-8")
+	if err := tmpl.Execute(w, map[string]interface{}{"req": req, "files": files}); err != nil {
+		log.Print(err)
+	}
+}
+
+var addr = flag.String("addr", ":8080", "http service address")
+var useAdapter = flag.Bool("adapter", false, "use net/http adapter")
 
 func main() {
 	flag.Parse()
-	h := web.SetErrorHandler(coreErrorHandler,
-		web.ProxyHeaderHandler("X-Real-Ip", "X-Scheme",
-			web.NewRouter().
-				Register("/debug/<:.*>", "*", web.NewRouter().
-					Register("/debug/expvar", "GET", expvar.ServeWeb).
-					Register("/debug/pprof/<:.*>", "*", pprof.ServeWeb)).
-				Register("/<:.*>", "*", web.FormHandler(10000, true, web.NewRouter().
-				Register("/", "GET", homeHandler).
-				Register("/core/file", "GET", web.FileHandler("static/file.txt", nil)).
-				Register("/static/<path:.*>", "GET", web.DirectoryHandler("static/", nil)).
-				Register("/mp", "GET", mpGetHandler, "POST", mpPostHandler).
-				Register("/debug/pprof/<command>", "*", web.HandlerFunc(pprof.ServeWeb)).
-				Register("/core/", "GET", coreHandler).
-				Register("/core/a/<a>/", "GET", coreHandler).
-				Register("/core/b/<b>/c/<c>", "GET", coreHandler).
-				Register("/core/c", "POST", coreHandler)))))
+	r := web.NewRouter().
+		Register("/", "*", web.FormHandler(-1, false, web.HandlerFunc(handler))).
+		Register("/static/<path:.*>", "GET", web.DirectoryHandler("static/", nil)).
+		Register("/example/file.txt", "GET", web.FileHandler("static/file.txt", nil)).
+		Register("/urlparam/<a>/<b>", "GET", handler).
+		Register("/panic/before", "GET", web.HandlerFunc(panicBeforeResponse)).
+		Register("/panic/after", "GET", web.HandlerFunc(panicAfterResponse)).
+		Register("/limit", "POST", web.FormHandler(16, false, web.HandlerFunc(handler))).
+		Register("/xsrf", "*", web.FormHandler(-1, true, web.HandlerFunc(handler))).
+		Register("/multipart", "POST", multipartHandler).
+		Register("/debug/expvar", "GET", expvar.ServeWeb).
+		Register("/debug/pprof/<:.*>", "*", pprof.ServeWeb).
+		Register("/proxy", "GET", web.ProxyHeaderHandler("X-Real-Ip", "X-Scheme", web.HandlerFunc(handler)))
 
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		log.Fatal("Listen", err)
-		return
-	}
-	defer listener.Close()
-	err = (&server.Server{Listener: listener, Handler: h, Logger: server.LoggerFunc(server.VerboseLogger)}).Serve()
-	if err != nil {
-		log.Fatal("Server", err)
+	h := web.SetErrorHandler(errorHandler, r)
+
+	if *useAdapter {
+		log.Print("Running with adapter.")
+		if err := http.ListenAndServe(*addr, adapter.HTTPHandler{h}); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		listener, err := net.Listen("tcp", *addr)
+		if err != nil {
+			log.Fatal("Listen", err)
+		}
+		defer listener.Close()
+		if err := (&server.Server{Listener: listener, Handler: h, Logger: server.LoggerFunc(server.VerboseLogger)}).Serve(); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
-
-var homeTempl = template.Must(template.New("home").Parse(homeStr))
-
-const homeStr = `
-<html>
-<head>
-</head>
-<body>
-<ul>
-<li><a href="/core">Core functionality</a>
-<li><a href="/mp">Multipart Form</a>
-</ul>
-</body>
-</html>`

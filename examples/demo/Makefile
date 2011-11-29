@@ -1,13 +1,14 @@
 run: clean example
 	./example 
  
+run-adapter: clean example
+	./example -adapter
+
 include $(GOROOT)/src/Make.inc
 
 TARG=example
-DEPS=../../server ../../websocket ../../pprof ../../expvar
+DEPS=../../server ../../web ../../pprof ../../expvar ../../adapter
 GOFILES=\
     main.go\
-    core.go\
-    multipart.go\
 
 include $(GOROOT)/src/Make.cmd
