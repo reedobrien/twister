@@ -1,4 +1,4 @@
-run: example
+run: clean example
 	./example 
  
 include $(GOROOT)/src/Make.inc

@@ -13,8 +13,7 @@
 // under the License.
 
 // Package expvar implements a Twister handler for registering and publishing
-// objects as JSON over HTTP. This is useful for publishing counters and other
-// operational data for monitoring tools.
+// objects as JSON over HTTP. 
 // 
 // The application should wrap the ServeWeb function in this package with
 // appropriate access control and register the resulting handler with a web

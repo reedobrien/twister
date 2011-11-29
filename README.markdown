@@ -57,15 +57,15 @@ Documentation
 * [websocket](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/websocket) - WebSocket server implementation. 
 * [expvar](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/expvar) - Exports variables as JSON over HTTP for monitoring. 
 * [pprof](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/pprof) - Exports profiling data for the pprof tool.
-* [gae](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/gae) - Support for running Twister on Google App Engine.
+* [adapter](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/adapter) - Adapter for using Twister handlers with the standard "net/http" package.
 
 Examples
 --------
  
-* [wiki](http://github.com/garyburd/twister/tree/master/examples/wiki) - The [Go web application example](http://golang.org/doc/codelab/wiki/) converted to use Twister instead of the Go http package. 
 * [demo](http://github.com/garyburd/twister/tree/master/examples/demo) -  Illustrates basic features of Twister. 
+* [wiki](http://github.com/garyburd/twister/tree/master/examples/wiki) - The [Go web application example](http://golang.org/doc/codelab/wiki/) converted to use Twister instead of the Go http package. 
+* [chat](http://github.com/garyburd/twister/tree/master/examples/chat) -  Chat using WebSockets.
 * [twitter](http://github.com/garyburd/twister/tree/master/examples/twitter) - Login to Twitter with OAuth and display home timeline. 
-* [facebook](http://github.com/garyburd/twister/tree/master/examples/facebook) - Login to Facebook with OAuth2 and display news feed. 
 
 License
 -------

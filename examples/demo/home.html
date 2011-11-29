@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Demo</title>
+</head>
+<body>
+
+<pre>
+{{with .status}}Status: {{.}}
+{{end}}{{with .reason}}Reason: {{.|html}}
+{{end}}{{with .req}}Method: {{.Method|html}}
+URL: {{.URL|html}}
+ProtocolVersion: {{.ProtocolVersion|html}}
+RemoteAddr: {{.RemoteAddr|html}}
+Header: {{range $k, $vs := .Header}}
+  {{range $vs}}{{$k|html}}: {{.|html}}{{end}}{{end}}
+Param: {{range $k, $vs := .Param}}
+  {{range $vs}}{{$k|html}}: {{.|html}}{{end}}{{end}}
+Cookie: {{range $k, $vs := .Cookie}}
+  {{range $vs}}{{$k|html}}: {{.|html}}{{end}}{{end}}
+URLParam: {{range $k, $v := .URLParam}}
+  {{$k|html}}: {{$v|html}}{{end}}
+ContentType: {{.ContentType|html}}
+ContentLength: {{.ContentLength|html}}
+Env: {{range $k, $v := .Env}}
+  {{$k|html}}: {{$v|html}}{{end}}
+{{end}}{{with .files}}Files: {{range .}}
+  Name: {{.Name|html}}, Filename: {{.Filename|html}}, ContentType: {{.ContentType|html}}, Length {{.Data|len}}{{end}}{{end}}
+</pre>
+
+<hr>
+<form method="post" action="/"><input type="text" value="world" name="hello"><input value="POST" type="submit"></form>
+<form method="get" action="/"><input type="text" value="world" name="hello"><input value="GET" type="submit"></form>
+
+<hr>
+Static Handlers: <a href="/example/file.txt">file handler</a>, <a href="/static/file.txt">directory handler</a>, <a href="/static/notfound.txt">not found</a>
+
+<hr>
+URL Parameters: <a href="/urlparam/1/2">a=1, b=2</a>
+
+<hr>
+Custom error handler: <a href="/not/found">not found</a>, <a href="/panic/before">panic before response</a>, <a href="/panic/after">panic after response</a>
+
+<hr>
+Request size limit.
+<form method="post" action="/limit"><input type="hidden" value="world" name="hello"><input value="OK" type="submit"></form>
+<form method="post" action="/limit"><input type="hidden" value="worldworldworldworldworldworld" name="hello"><input value="Fail" type="submit"></form>
+
+<hr>
+XSRF:
+<form method="get" action="/xsrf"><input value="Get, OK" type="submit"></form>
+<form method="post" action="/xsrf"><input value="No token, Fail" type="submit"></form>
+<form method="post" action="/xsrf"><input type="hidden" value="{{.req|xsrf}}" name="xsrf"><input value="With token, OK" type="submit"></form>
+
+<hr>
+Multipart
+<form method="post" action="/multipart" enctype="multipart/form-data">
+hello: <input type="text" name="hello" value="world">
+file: <input type="file" name="file">
+<input type="submit">
+</form>
+
+<hr>
+<a href="/debug/expvar">Exported variables</a>
+
+<hr>
+<a href="/proxy">Proxy header handler</a>
+
+<hr>
+
+</body>
+</html>

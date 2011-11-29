@@ -12,6 +12,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+// Package websocket implements the WebSocket protocol for the Twister server.
 package websocket
 
 import (
