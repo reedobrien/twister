@@ -173,7 +173,7 @@ func signature(clientCredentials *Credentials, credentials *Credentials, method,
 
 	h := hmac.NewSHA1(key.Bytes())
 	writeBaseString(h, method, urlStr, param)
-	sum := h.Sum()
+	sum := h.Sum(nil)
 
 	encodedSum := make([]byte, base64.StdEncoding.EncodedLen(len(sum)))
 	base64.StdEncoding.Encode(encodedSum, sum)
@@ -217,7 +217,7 @@ func (c *Client) SignParam(credentials *Credentials, method, urlStr string, para
 	p := web.Values(param)
 	p.Set("oauth_consumer_key", c.Credentials.Token)
 	p.Set("oauth_signature_method", "HMAC-SHA1")
-	p.Set("oauth_timestamp", strconv.Itoa64(time.Seconds()))
+	p.Set("oauth_timestamp", strconv.Itoa64(time.Now().Unix()))
 	p.Set("oauth_nonce", nonce())
 	p.Set("oauth_version", "1.0")
 	if c.Scope != "" {

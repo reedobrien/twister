@@ -22,6 +22,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ServeFileOptions struct {
@@ -50,8 +51,9 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 	}
 	defer f.Close()
 
+	const modeType = os.ModeDir | os.ModeSymlink | os.ModeNamedPipe | os.ModeSocket | os.ModeDevice
 	info, err := f.Stat()
-	if err != nil || !info.IsRegular() {
+	if err != nil || info.Mode()&modeType != 0 {
 		req.Error(StatusNotFound, err)
 		return
 	}
@@ -65,7 +67,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 		}
 	}
 
-	etag := strconv.Itob64(info.Mtime_ns, 36)
+	etag := strconv.Itob64(info.ModTime().UnixNano(), 36)
 	header.Set(HeaderETag, QuoteHeaderValue(etag))
 
 	for _, qetag := range req.Header.GetList(HeaderIfNoneMatch) {
@@ -84,7 +86,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 		}
 	} else {
 		// Set entity headers
-		header.Set(HeaderContentLength, strconv.Itoa64(info.Size))
+		header.Set(HeaderContentLength, strconv.Itoa64(info.Size()))
 		if _, found := header[HeaderContentType]; !found {
 			ext := path.Ext(fname)
 			contentType := ""
@@ -102,6 +104,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 
 	if v := req.Param.Get("v"); v != "" {
 
+		// remove max-age from Cache-Control header
 		parts := header.GetList(HeaderCacheControl)
 		i := 0
 		for _, part := range parts {
@@ -115,9 +118,9 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 			parts = parts[:i]
 		}
 
-		const maxAge = 60 * 60 * 24 * 365 * 10
-		header.Set(HeaderExpires, formatDeltaSeconds(maxAge))
-		header.Set(HeaderCacheControl, strings.Join(append(parts, "max-age="+strconv.Itoa(maxAge)), ", "))
+		const maxAge = 10 * 365 * 24 * time.Hour
+		header.Set(HeaderExpires, formatExpiration(maxAge))
+		header.Set(HeaderCacheControl, strings.Join(append(parts, "max-age="+strconv.Itoa(int(maxAge.Seconds()))), ", "))
 	}
 
 	w := req.Responder.Respond(status, header)

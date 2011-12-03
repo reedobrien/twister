@@ -138,7 +138,7 @@ func (acl *ApacheCombinedLogger) Log(lr *LogRecord) {
 	}
 
 	var b = &bytes.Buffer{}
-	fmt.Fprintf(b, "%s - - [%s] ", host, time.LocalTime().Format(apacheTimeFormat))
+	fmt.Fprintf(b, "%s - - [%s] ", host, time.Now().Format(apacheTimeFormat))
 	fmt.Fprintf(b, "\"%s %s HTTP/%d.%d\" ",
 		lr.Request.Method, lr.Request.URL, lr.Request.ProtocolVersion/1000, lr.Request.ProtocolVersion%1000)
 	fmt.Fprintf(b, "%d %d \"%s\" \"%s\"\n",

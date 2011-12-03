@@ -33,14 +33,9 @@ const ContentTypeHTML = "text/html; charset=\"utf-8\""
 // timeLayout is the time layout used for HTTP headers and other values.
 const timeLayout = "Mon, 02 Jan 2006 15:04:05 GMT"
 
-// formatDeltaSeconds returns current time plus delta formatted per HTTP conventions.
-func formatDeltaSeconds(delta int) string {
-	return time.SecondsToUTC(time.Seconds() + int64(delta)).Format(timeLayout)
-}
-
-// formatDeltaDays returns current time plus delta formatted per HTTP conventions.
-func formatDeltaDays(delta int) string {
-	return formatDeltaSeconds(delta * 60 * 60 * 24)
+// formatExpiration returns current time plus delta formatted per HTTP conventions.
+func formatExpiration(delta time.Duration) string {
+	return time.Now().Add(delta).UTC().Format(timeLayout)
 }
 
 var (
@@ -168,7 +163,7 @@ func signature(secret, key, expiration, value string) string {
 	io.WriteString(hm, expiration)
 	hm.Write([]byte{0})
 	io.WriteString(hm, value)
-	return hex.EncodeToString(hm.Sum())
+	return hex.EncodeToString(hm.Sum(nil))
 }
 
 // SignValue returns a string containing value, an expiration time and a
@@ -195,8 +190,8 @@ func signature(secret, key, expiration, value string) string {
 //  func requestUid(req *web.Request) (string, os.Error) {
 //      return web.VerifyValue(secret, "uid", req.Cookie.Get("uid"))
 //  }
-func SignValue(secret, context string, maxAgeSeconds int, value string) string {
-	expiration := strconv.Itob64(time.Seconds()+int64(maxAgeSeconds), 16)
+func SignValue(secret, context string, maxAge time.Duration, value string) string {
+	expiration := strconv.Itob64(time.Now().Add(maxAge).Unix(), 16)
 	sig := signature(secret, context, expiration, value)
 	return sig + "~" + expiration + "~" + value
 }
@@ -211,7 +206,7 @@ func VerifyValue(secret, context string, signedValue string) (string, error) {
 		return "", errVerificationFailure
 	}
 	expiration, err := strconv.Btoi64(a[1], 16)
-	if err != nil || expiration < time.Seconds() {
+	if err != nil || expiration < time.Now().Unix() {
 		return "", errVerificationFailure
 	}
 	expectedSig := signature(secret, context, a[1], a[2])

@@ -21,18 +21,18 @@ func xsrf(req *web.Request) string {
 	return req.Param.Get(web.XSRFParamName)
 }
 
-var tmpl = template.Must(template.New("home").Funcs(template.FuncMap{"xsrf": xsrf}).ParseFile("home.html"))
+var templates = template.Must(template.New("set").Funcs(template.FuncMap{"xsrf": xsrf}).ParseGlob("*.html"))
 
 func handler(req *web.Request) {
 	w := req.Respond(web.StatusOK, web.HeaderContentType, "text/html; charset=utf-8")
-	if err := tmpl.Execute(w, map[string]interface{}{"req": req}); err != nil {
+	if err := templates.ExecuteTemplate(w, "home.html", map[string]interface{}{"req": req}); err != nil {
 		log.Print(err)
 	}
 }
 
 func errorHandler(req *web.Request, status int, reason error, header web.Header) {
 	w := req.Responder.Respond(status, header)
-	if err := tmpl.Execute(w, map[string]interface{}{"req": req, "status": status, "reason": reason}); err != nil {
+	if err := templates.ExecuteTemplate(w, "home.html", map[string]interface{}{"req": req, "status": status, "reason": reason}); err != nil {
 		log.Print(err)
 	}
 }
@@ -54,7 +54,7 @@ func multipartHandler(req *web.Request) {
 		return
 	}
 	w := req.Respond(web.StatusOK, web.HeaderContentType, "text/html; charset=utf-8")
-	if err := tmpl.Execute(w, map[string]interface{}{"req": req, "files": files}); err != nil {
+	if err := templates.ExecuteTemplate(w, "home.html", map[string]interface{}{"req": req, "files": files}); err != nil {
 		log.Print(err)
 	}
 }

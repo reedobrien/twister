@@ -28,6 +28,7 @@ import (
 	"net/url"
 	"strings"
 	"text/template"
+    "time"
 )
 
 var oauthClient = oauth.Client{
@@ -37,9 +38,9 @@ var oauthClient = oauth.Client{
 }
 
 // credentialsCookie encodes OAuth credentials to a Set-Cookie header value.
-func credentialsCookie(name string, c *oauth.Credentials, maxAgeDays int) string {
+func credentialsCookie(name string, c *oauth.Credentials, maxAge time.Duration) string {
 	return web.NewCookie(name, url.QueryEscape(c.Token)+"/"+url.QueryEscape(c.Secret)).
-		MaxAgeDays(maxAgeDays).
+		MaxAge(maxAge).
 		String()
 }
 
@@ -98,7 +99,7 @@ func authCallback(req *web.Request) {
 		return
 	}
 	req.Redirect("/", false,
-		web.HeaderSetCookie, credentialsCookie("tok", tokenCredentials, 30),
+		web.HeaderSetCookie, credentialsCookie("tok", tokenCredentials, 30 * 24 * time.Hour),
 		web.HeaderSetCookie, web.NewCookie("tmp", "").Delete().String())
 }
 

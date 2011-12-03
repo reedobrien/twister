@@ -74,7 +74,7 @@ func serveProfile(req *web.Request) {
 		req.Error(web.StatusInternalServerError, err)
 		return
 	}
-	time.Sleep(sec * 1e9)
+	time.Sleep(time.Duration(sec) * time.Second)
 	pprof.StopCPUProfile()
 }
 

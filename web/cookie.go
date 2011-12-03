@@ -17,6 +17,7 @@ package web
 import (
 	"bytes"
 	"strconv"
+	"time"
 )
 
 // parseCookieValues parses cookies from values and adds them to m. The
@@ -85,7 +86,7 @@ type Cookie struct {
 	value    string
 	path     string
 	domain   string
-	maxAge   int
+	maxAge   time.Duration
 	secure   bool
 	httpOnly bool
 }
@@ -109,13 +110,10 @@ func (c *Cookie) Domain(domain string) *Cookie { c.domain = domain; return c }
 // the expiration time is not included in the header value and the browser will
 // handle the cookie as a "session" cookie. To support Internet Explorer, the
 // maximum age is also rendered as an absolute expiration time.
-func (c *Cookie) MaxAge(seconds int) *Cookie { c.maxAge = seconds; return c }
-
-// MaxAgeDays sets the maximum age for the cookie in days.
-func (c *Cookie) MaxAgeDays(days int) *Cookie { return c.MaxAge(days * 60 * 60 * 24) }
+func (c *Cookie) MaxAge(maxAge time.Duration) *Cookie { c.maxAge = maxAge; return c }
 
 // Delete sets the expiration date to a time in the past. 
-func (c *Cookie) Delete() *Cookie { return c.MaxAgeDays(-30).HTTPOnly(false) }
+func (c *Cookie) Delete() *Cookie { return c.MaxAge(-30 * 24 * time.Hour).HTTPOnly(false) }
 
 // Secure sets the secure attribute. 
 func (c *Cookie) Secure(secure bool) *Cookie { c.secure = secure; return c }
@@ -147,9 +145,9 @@ func (c *Cookie) String() string {
 
 	if c.maxAge != 0 {
 		buf.WriteString("; max-age=")
-		buf.WriteString(strconv.Itoa(c.maxAge))
+		buf.WriteString(strconv.Itoa(int(c.maxAge.Seconds())))
 		buf.WriteString("; expires=")
-		buf.WriteString(formatDeltaSeconds(c.maxAge))
+		buf.WriteString(formatExpiration(c.maxAge))
 	}
 
 	if c.secure {

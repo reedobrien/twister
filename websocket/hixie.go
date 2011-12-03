@@ -190,7 +190,7 @@ func Upgrade(req *web.Request, readBufSize, writeBufSize int, header web.Header)
 	hash.Write(key1)
 	hash.Write(key2)
 	hash.Write(key3)
-	response := hash.Sum()
+	response := hash.Sum(nil)
 
 	// TODO: handle tls
 	location := "ws://" + req.URL.Host + req.URL.RawPath
