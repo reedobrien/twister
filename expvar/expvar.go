@@ -131,7 +131,7 @@ type Int struct {
 }
 
 func (i *Int) MarshalJSON() ([]byte, error) {
-	return []byte(strconv.Itoa64(i.i)), nil
+	return []byte(strconv.FormatInt(i.i, 10)), nil
 }
 
 // Add atomically adds delta to the counter.

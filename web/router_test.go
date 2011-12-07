@@ -24,7 +24,7 @@ type routeTestHandler string
 func (h routeTestHandler) ServeWeb(req *Request) {
 	w := req.Respond(StatusOK)
 	var keys []string
-	for key, _ := range req.URLParam {
+	for key := range req.URLParam {
 		keys = append(keys, key)
 	}
 	sort.Strings(keys)

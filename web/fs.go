@@ -67,7 +67,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 		}
 	}
 
-	etag := strconv.Itob64(info.ModTime().UnixNano(), 36)
+	etag := strconv.FormatInt(info.ModTime().UnixNano(), 36)
 	header.Set(HeaderETag, QuoteHeaderValue(etag))
 
 	for _, qetag := range req.Header.GetList(HeaderIfNoneMatch) {
@@ -79,14 +79,14 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 
 	if status == StatusNotModified {
 		// Clear entity headers.
-		for k, _ := range header {
+		for k := range header {
 			if strings.HasPrefix(k, "Content-") {
 				delete(header, k)
 			}
 		}
 	} else {
 		// Set entity headers
-		header.Set(HeaderContentLength, strconv.Itoa64(info.Size()))
+		header.Set(HeaderContentLength, strconv.FormatInt(info.Size(), 10))
 		if _, found := header[HeaderContentType]; !found {
 			ext := path.Ext(fname)
 			contentType := ""

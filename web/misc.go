@@ -191,7 +191,7 @@ func signature(secret, key, expiration, value string) string {
 //      return web.VerifyValue(secret, "uid", req.Cookie.Get("uid"))
 //  }
 func SignValue(secret, context string, maxAge time.Duration, value string) string {
-	expiration := strconv.Itob64(time.Now().Add(maxAge).Unix(), 16)
+	expiration := strconv.FormatInt(time.Now().Add(maxAge).Unix(), 16)
 	sig := signature(secret, context, expiration, value)
 	return sig + "~" + expiration + "~" + value
 }
@@ -205,7 +205,7 @@ func VerifyValue(secret, context string, signedValue string) (string, error) {
 	if len(a) != 3 {
 		return "", errVerificationFailure
 	}
-	expiration, err := strconv.Btoi64(a[1], 16)
+	expiration, err := strconv.ParseInt(a[1], 16, 64)
 	if err != nil || expiration < time.Now().Unix() {
 		return "", errVerificationFailure
 	}

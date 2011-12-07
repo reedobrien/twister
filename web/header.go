@@ -174,11 +174,11 @@ func (p byQuality) Swap(i, j int) { p[i], p[j] = p[j], p[i] }
 func (p byQuality) Less(i, j int) bool {
 	qi := float64(1)
 	if s, ok := p[i].Param["q"]; ok {
-		qi, _ = strconv.Atof64(s)
+		qi, _ = strconv.ParseFloat(s, 64)
 	}
 	qj := float64(1)
 	if s, ok := p[j].Param["q"]; ok {
-		qj, _ = strconv.Atof64(s)
+		qj, _ = strconv.ParseFloat(s, 64)
 	}
 	return qj < qi
 }

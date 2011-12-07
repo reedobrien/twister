@@ -30,7 +30,7 @@ func hub() {
 				delete(conns, subscription.conn)
 			}
 		case message := <-messageChan:
-			for conn, _ := range conns {
+			for conn := range conns {
 				if err := conn.WriteMessage(message); err != nil {
 					conn.Close()
 				}

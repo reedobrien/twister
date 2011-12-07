@@ -344,7 +344,7 @@ func readChunkFraming(br *bufio.Reader, first bool) (int, error) {
 	if isPrefix {
 		return 0, errors.New("twister: bad chunked format")
 	}
-	n, err := strconv.Btoui64(string(line), 16)
+	n, err := strconv.ParseUint(string(line), 16, 64)
 	if err != nil {
 		return 0, err
 	}

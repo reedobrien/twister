@@ -28,7 +28,7 @@ import (
 	"net/url"
 	"strings"
 	"text/template"
-    "time"
+	"time"
 )
 
 var oauthClient = oauth.Client{
@@ -99,7 +99,7 @@ func authCallback(req *web.Request) {
 		return
 	}
 	req.Redirect("/", false,
-		web.HeaderSetCookie, credentialsCookie("tok", tokenCredentials, 30 * 24 * time.Hour),
+		web.HeaderSetCookie, credentialsCookie("tok", tokenCredentials, 30*24*time.Hour),
 		web.HeaderSetCookie, web.NewCookie("tmp", "").Delete().String())
 }
 

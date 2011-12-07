@@ -26,12 +26,12 @@ var testContentLength = computeTestContentLength()
 
 func computeTestEtag() string {
 	info, _ := os.Stat("fs_test.go")
-	return QuoteHeaderValue(strconv.Itob64(info.ModTime().UnixNano(), 36))
+	return QuoteHeaderValue(strconv.FormatInt(info.ModTime().UnixNano(), 36))
 }
 
 func computeTestContentLength() string {
 	info, _ := os.Stat("fs_test.go")
-	return strconv.Itoa64(info.Size())
+	return strconv.FormatInt(info.Size(), 10)
 }
 
 var fileHandlerTests = []struct {

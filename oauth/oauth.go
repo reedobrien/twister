@@ -192,7 +192,7 @@ func nonce() string {
 	if nonceCounter == 0 {
 		binary.Read(rand.Reader, binary.BigEndian, &nonceCounter)
 	}
-	result := strconv.Uitob64(nonceCounter, 16)
+	result := strconv.FormatUint(nonceCounter, 16)
 	nonceCounter += 1
 	return result
 }
@@ -217,7 +217,7 @@ func (c *Client) SignParam(credentials *Credentials, method, urlStr string, para
 	p := web.Values(param)
 	p.Set("oauth_consumer_key", c.Credentials.Token)
 	p.Set("oauth_signature_method", "HMAC-SHA1")
-	p.Set("oauth_timestamp", strconv.Itoa64(time.Now().Unix()))
+	p.Set("oauth_timestamp", strconv.FormatInt(time.Now().Unix(), 10))
 	p.Set("oauth_nonce", nonce())
 	p.Set("oauth_version", "1.0")
 	if c.Scope != "" {

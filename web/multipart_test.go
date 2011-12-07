@@ -64,7 +64,7 @@ var multiPartTests = []struct {
 			"\r\n--deadbeef--\r\n",
 		param: NewValues("hello", "world"),
 		parts: []Part{
-			Part{
+			{
 				Name:         "file",
 				Filename:     "file.txt",
 				ContentType:  "text/plain",
@@ -86,7 +86,7 @@ var multiPartTests = []struct {
 			"\r\n--deadbeef--\r\n",
 		param: NewValues("hello", "world"),
 		parts: []Part{
-			Part{
+			{
 				Name:         "file",
 				Filename:     "file.txt",
 				ContentType:  "text/plain",
@@ -118,7 +118,7 @@ var multiPartTests = []struct {
 			"\r\n--deadbeef--\r\n",
 		param: NewValues(),
 		parts: []Part{
-			Part{
+			{
 				Name:         "file",
 				Filename:     "file.txt",
 				ContentType:  "text/plain",

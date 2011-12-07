@@ -66,7 +66,7 @@ func (r lazyResponder) Write(p []byte) (int, error) {
 }
 
 func serveProfile(req *web.Request) {
-	sec, _ := strconv.Atoi64(req.Param.Get("seconds"))
+	sec, _ := strconv.ParseInt(req.Param.Get("seconds"), 10, 64)
 	if sec == 0 {
 		sec = 30
 	}
@@ -102,7 +102,7 @@ func serveSymbol(req *web.Request) {
 			a = p
 			p = nil
 		}
-		if pc, _ := strconv.Btoui64(string(a), 0); pc != 0 {
+		if pc, _ := strconv.ParseUint(string(a), 0, 64); pc != 0 {
 			if f := runtime.FuncForPC(uintptr(pc)); f != nil {
 				fmt.Fprintf(w, "%#x %s\n", pc, f.Name())
 			}
