@@ -23,7 +23,7 @@ import (
 )
 
 func testHandler(req *web.Request) {
-	c, err := Upgrade(req, 8, 1024, nil)
+	c, err := Upgrade(req, 16, 1024, nil)
 	if err != nil {
 		return
 	}

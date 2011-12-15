@@ -51,8 +51,8 @@ func init() {
 	for c := 0; c < 256; c++ {
 		isCtl[c] = (0 <= c && c <= 31) || c == 127
 		isChar := 0 <= c && c <= 127
-		isSpace[c] = strings.IndexRune(" \t\r\n", c) >= 0
-		isSeparator := strings.IndexRune(" \t\"(),/:;<=>?@[]\\{}", c) >= 0
+		isSpace[c] = strings.IndexRune(" \t\r\n", rune(c)) >= 0
+		isSeparator := strings.IndexRune(" \t\"(),/:;<=>?@[]\\{}", rune(c)) >= 0
 		isToken[c] = isChar && !isCtl[c] && !isSeparator
 	}
 }
