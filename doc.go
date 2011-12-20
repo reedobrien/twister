@@ -15,3 +15,8 @@
 // Twister is fast, modular and lightweight framework for building web
 // applications.
 package twister
+
+import (
+    _ "github.com/garyburd/twister/server"
+    _ "github.com/garyburd/twister/web"
+)
