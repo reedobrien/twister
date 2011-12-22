@@ -168,7 +168,7 @@ func signature(secret, key, expiration, value string) string {
 
 // SignValue returns a string containing value, an expiration time and a
 // signature. The expiration time is computed from the current time and
-// maxAgeSeconds.  The signature is an HMAC SHA-1 signature of value, context
+// maxAge. The signature is an HMAC SHA-1 signature of value, context
 // and the expiration time. Use the function VerifyValue to extract the value,
 // check the expiration time and verify the signature.
 // 

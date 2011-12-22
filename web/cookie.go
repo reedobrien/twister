@@ -145,7 +145,7 @@ func (c *Cookie) String() string {
 
 	if c.maxAge != 0 {
 		buf.WriteString("; max-age=")
-		buf.WriteString(strconv.Itoa(int(c.maxAge.Seconds())))
+		buf.WriteString(strconv.Itoa(int(c.maxAge / time.Second)))
 		buf.WriteString("; expires=")
 		buf.WriteString(formatExpiration(c.maxAge))
 	}

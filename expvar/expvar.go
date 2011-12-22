@@ -172,6 +172,6 @@ func init() {
 		"version":    runtime.Version(),
 		"memstats":   &runtime.MemStats,
 	})
-	Publish("uptimeSeconds", Func(func() interface{} { return int(time.Now().Sub(start).Seconds()) }))
+	Publish("uptimeSeconds", Func(func() interface{} { return int(time.Now().Sub(start) / time.Second) }))
 	Publish("cmdline", &os.Args)
 }
