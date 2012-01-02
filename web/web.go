@@ -31,9 +31,9 @@ import (
 )
 
 var (
-	ErrInvalidState          = errors.New("object in invalid state")
-	ErrBadFormat             = errors.New("bad data format")
-	ErrRequestEntityTooLarge = errors.New("HTTP request entity too large")
+	ErrInvalidState          = errors.New("twister: object in invalid state")
+	ErrBadFormat             = errors.New("twister: bad data format")
+	ErrRequestEntityTooLarge = errors.New("twister: HTTP request entity too large")
 )
 
 // Responder represents the response.
