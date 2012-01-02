@@ -73,14 +73,6 @@ func parseCookieValues(values []string, m Values) error {
 //
 // As a convenience, the NewCookie function returns a cookie with the path
 // attribute set to "/" and the httponly attribute set to true. 
-//
-// The following example shows how to set a cookie header using Cookie:
-//
-//  func myHandler(req *web.Request) {
-//      c := web.NewCookie("my-cookie-name", "my-cookie-value").String()
-//      w := req.Respond(web.StatusOK, web.HeaderSetCookie, c)
-//      io.WriteString(w, "<html><body>Hello</body></html>")
-//  }
 type Cookie struct {
 	name     string
 	value    string

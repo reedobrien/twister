@@ -120,7 +120,7 @@ func ServeFile(req *Request, fname string, options *ServeFileOptions) {
 
 		const maxAge = 10 * 365 * 24 * time.Hour
 		header.Set(HeaderExpires, formatExpiration(maxAge))
-		header.Set(HeaderCacheControl, strings.Join(append(parts, "max-age="+strconv.Itoa(int(maxAge / time.Second))), ", "))
+		header.Set(HeaderCacheControl, strings.Join(append(parts, "max-age="+strconv.Itoa(int(maxAge/time.Second))), ", "))
 	}
 
 	w := req.Responder.Respond(status, header)
