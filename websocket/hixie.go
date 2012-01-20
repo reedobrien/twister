@@ -193,7 +193,7 @@ func Upgrade(req *web.Request, readBufSize, writeBufSize int, header web.Header)
 	response := hash.Sum(nil)
 
 	// TODO: handle tls
-	location := "ws://" + req.URL.Host + req.URL.RawPath
+	location := "ws://" + req.URL.Host + req.URL.RequestURI()
 	protocol := req.Header.Get(headerSecWebSocketProtocol)
 
 	h := make(web.Header)

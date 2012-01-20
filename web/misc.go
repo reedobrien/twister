@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"crypto/hmac"
 	"crypto/rand"
+	"crypto/sha1"
 	"crypto/subtle"
 	"encoding/hex"
 	"errors"
@@ -157,7 +158,7 @@ const (
 )
 
 func signature(secret, key, expiration, value string) string {
-	hm := hmac.NewSHA1([]byte(secret))
+	hm := hmac.New(sha1.New, []byte(secret))
 	io.WriteString(hm, key)
 	hm.Write([]byte{0})
 	io.WriteString(hm, expiration)

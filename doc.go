@@ -17,6 +17,6 @@
 package twister
 
 import (
-    _ "github.com/garyburd/twister/server"
-    _ "github.com/garyburd/twister/web"
+	_ "github.com/garyburd/twister/server"
+	_ "github.com/garyburd/twister/web"
 )

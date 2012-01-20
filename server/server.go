@@ -48,12 +48,6 @@ type Server struct {
 	// request or headers.
 	DefaultHost string
 
-	// The net.Conn.SetReadTimeout value for new connections.
-	ReadTimeout int64
-
-	// The net.Conn.SetWriteTimeout value for new connections.
-	WriteTimeout int64
-
 	// Log the request.
 	Logger Logger
 
@@ -194,7 +188,7 @@ func (t *transaction) prepare() (err error) {
 		return err
 	}
 
-	u, err := url.Parse(urlStr)
+	u, err := url.ParseRequest(urlStr)
 	if err != nil {
 		return err
 	}
@@ -533,12 +527,6 @@ func (t *transaction) finish() error {
 
 func (s *Server) serveConnection(conn net.Conn) {
 	defer conn.Close()
-	if s.ReadTimeout != 0 {
-		conn.SetReadTimeout(s.ReadTimeout)
-	}
-	if s.WriteTimeout != 0 {
-		conn.SetWriteTimeout(s.WriteTimeout)
-	}
 	br := bufio.NewReader(conn)
 	for {
 		t := &transaction{

@@ -20,6 +20,7 @@ import (
 	"io"
 	"net"
 	"net/url"
+	"time"
 )
 
 type testTransaction struct {
@@ -78,15 +79,15 @@ func (c testConn) RemoteAddr() net.Addr {
 	return testAddr("remote")
 }
 
-func (c testConn) SetTimeout(nsec int64) error {
+func (c testConn) SetDeadline(t time.Time) error {
 	return nil
 }
 
-func (c testConn) SetReadTimeout(nsec int64) error {
+func (c testConn) SetReadDeadline(t time.Time) error {
 	return nil
 }
 
-func (c testConn) SetWriteTimeout(nsec int64) error {
+func (c testConn) SetWriteDeadline(t time.Time) error {
 	return nil
 }
 

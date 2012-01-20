@@ -23,6 +23,7 @@ import (
 	"net"
 	"os"
 	"testing"
+	"time"
 )
 
 type testAddr string
@@ -89,15 +90,15 @@ func (c testConn) RemoteAddr() net.Addr {
 	return testAddr("remote")
 }
 
-func (c testConn) SetTimeout(nsec int64) error {
+func (c testConn) SetDeadline(nsec time.Time) error {
 	return nil
 }
 
-func (c testConn) SetReadTimeout(nsec int64) error {
+func (c testConn) SetReadDeadline(nsec time.Time) error {
 	return nil
 }
 
-func (c testConn) SetWriteTimeout(nsec int64) error {
+func (c testConn) SetWriteDeadline(nsec time.Time) error {
 	return nil
 }
 
