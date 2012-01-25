@@ -75,8 +75,9 @@ func webRequestFromHTTPRequest(w http.ResponseWriter, r *http.Request) *web.Requ
 	req, _ := web.NewRequest(
 		r.RemoteAddr,
 		r.Method,
-		&url,
+		url.RequestURI(),
 		web.ProtocolVersion(r.ProtoMajor, r.ProtoMinor),
+		&url,
 		header)
 
 	req.Body = r.Body

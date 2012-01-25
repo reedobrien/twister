@@ -133,8 +133,9 @@ func TestMultiPart(t *testing.T) {
 		req, err := NewRequest(
 			"",
 			"",
-			&url.URL{},
+			"",
 			ProtocolVersion11,
+			&url.URL{},
 			NewHeader(HeaderContentType, "multipart/form-data; boundary=deadbeef"))
 		if err != nil {
 			t.Fatal("error creating request")

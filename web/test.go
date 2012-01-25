@@ -117,7 +117,7 @@ func RunHandler(urlStr string, method string, reqHeader Header, reqBody []byte, 
 	if err != nil {
 		panic(err)
 	}
-	req, err := NewRequest(remoteAddr, method, u, protocolVersion, reqHeader)
+	req, err := NewRequest(remoteAddr, method, u.RequestURI(), protocolVersion, u, reqHeader)
 	if err != nil {
 		panic(err)
 	}

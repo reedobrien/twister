@@ -16,7 +16,6 @@ package web
 
 import (
 	"bytes"
-	"net/url"
 	"path"
 	"regexp"
 	"strings"
@@ -168,13 +167,6 @@ func (router *Router) find(path string, method string) (Handler, []string, []str
 			return HandlerFunc(addSlash), nil, nil
 		}
 		values = values[1:]
-		for j := 0; j < len(values); j++ {
-			if value, e := url.QueryUnescape(values[j]); e != nil {
-				return routerError(StatusNotFound), nil, nil
-			} else {
-				values[j] = value
-			}
-		}
 		if handler := r.handlers[method]; handler != nil {
 			return handler, r.names, values
 		}

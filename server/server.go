@@ -177,7 +177,7 @@ func readRequestLine(b *bufio.Reader) (method string, urlStr string, version int
 }
 
 func (t *transaction) prepare() (err error) {
-	method, urlStr, version, err := readRequestLine(t.br)
+	method, requestURI, version, err := readRequestLine(t.br)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (t *transaction) prepare() (err error) {
 		return err
 	}
 
-	u, err := url.ParseRequest(urlStr)
+	u, err := url.ParseRequest(requestURI)
 	if err != nil {
 		return err
 	}
@@ -206,7 +206,7 @@ func (t *transaction) prepare() (err error) {
 		u.Scheme = "http"
 	}
 
-	req, err := web.NewRequest(t.conn.RemoteAddr().String(), method, u, version, header)
+	req, err := web.NewRequest(t.conn.RemoteAddr().String(), method, requestURI, version, u, header)
 	if err != nil {
 		return
 	}

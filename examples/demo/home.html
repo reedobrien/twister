@@ -10,6 +10,7 @@
 {{with .status}}Status: {{.}}
 {{end}}{{with .reason}}Reason: {{.|html}}
 {{end}}{{with .req}}Method: {{.Method|html}}
+RequestURI: {{.RequestURI|html}}
 URL: {{.URL|html}}
 ProtocolVersion: {{.ProtocolVersion|html}}
 RemoteAddr: {{.RemoteAddr|html}}

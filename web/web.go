@@ -57,11 +57,14 @@ type Request struct {
 	// Uppercase request method. GET, POST, etc.
 	Method string
 
-	// The request URL with host and scheme set appropriately.
-	URL *url.URL
+	// Raw URI from the first line of the request.
+	RequestURI string
 
 	// Protocol version: major version * 1000 + minor version	
 	ProtocolVersion int
+
+	// The request URL with host and scheme set appropriately.
+	URL *url.URL
 
 	// The IP address of the client sending the request to the server.
 	RemoteAddr string
@@ -117,12 +120,13 @@ func (f HandlerFunc) ServeWeb(req *Request) { f(req) }
 
 // NewRequest allocates and initializes a request. This function is provided
 // for the convenience of protocol adapters (fcgi, native http server, ...).
-func NewRequest(remoteAddr string, method string, u *url.URL, protocolVersion int, header Header) (req *Request, err error) {
+func NewRequest(remoteAddr string, method string, requestURI string, protocolVersion int, u *url.URL, header Header) (req *Request, err error) {
 	req = &Request{
 		RemoteAddr:      remoteAddr,
 		Method:          strings.ToUpper(method),
-		URL:             u,
+		RequestURI:      requestURI,
 		ProtocolVersion: protocolVersion,
+		URL:             u,
 		ErrorHandler:    defaultErrorHandler,
 		Param:           make(Values),
 		Header:          header,
