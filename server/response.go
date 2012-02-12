@@ -87,11 +87,7 @@ type identityResponseBody struct {
 func newIdentityResponseBody(wr io.Writer, header []byte, bufferSize, contentLength int) (*identityResponseBody, error) {
 	w := &identityResponseBody{wr: wr, contentLength: contentLength}
 
-	w.bw, w.err = bufio.NewWriterSize(wr, bufferSize)
-	if w.err != nil {
-		return w, w.err
-	}
-
+	w.bw = bufio.NewWriterSize(wr, bufferSize)
 	w.headerWritten, w.err = w.bw.Write(header)
 	return w, w.err
 }

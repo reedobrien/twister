@@ -170,7 +170,11 @@ func init() {
 		"cgocalls":   Func(func() interface{} { return runtime.Cgocalls() }),
 		"goroutines": Func(func() interface{} { return runtime.Goroutines() }),
 		"version":    runtime.Version(),
-		"memstats":   &runtime.MemStats,
+		"memstats": Func(func() interface{} {
+			var ms runtime.MemStats
+			runtime.ReadMemStats(&ms)
+			return &ms
+		}),
 	})
 	Publish("uptimeSeconds", Func(func() interface{} { return int(time.Now().Sub(start) / time.Second) }))
 	Publish("cmdline", &os.Args)

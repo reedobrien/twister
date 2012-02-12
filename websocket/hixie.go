@@ -170,15 +170,8 @@ func Upgrade(req *web.Request, readBufSize, writeBufSize int, header web.Header)
 		r = netConn
 	}
 
-	br, err = bufio.NewReaderSize(r, readBufSize)
-	if err != nil {
-		return nil, err
-	}
-
-	bw, err := bufio.NewWriterSize(netConn, writeBufSize)
-	if err != nil {
-		return nil, err
-	}
+	br = bufio.NewReaderSize(r, readBufSize)
+	bw := bufio.NewWriterSize(netConn, writeBufSize)
 
 	key3 := make([]byte, 8)
 	if _, err := io.ReadFull(br, key3); err != nil {
