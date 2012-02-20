@@ -53,8 +53,6 @@ Documentation
  
 * [web](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/web) - Defines the application interface to a server and includes functionality used by most web applications.
 * [server](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/server) - An HTTP server impelemented in Go. 
-* [oauth](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/oauth) - OAuth client. 
-* [websocket](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/websocket) - WebSocket server implementation. 
 * [expvar](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/expvar) - Exports variables as JSON over HTTP for monitoring. 
 * [pprof](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/pprof) - Exports profiling data for the pprof tool.
 * [adapter](http://gopkgdoc.appspot.com/pkg/github.com/garyburd/twister/adapter) - Adapter for using Twister handlers with the standard "net/http" package.
@@ -64,7 +62,6 @@ Examples
  
 * [demo](http://github.com/garyburd/twister/tree/master/examples/demo) -  Illustrates basic features of Twister. 
 * [wiki](http://github.com/garyburd/twister/tree/master/examples/wiki) - The [Go web application example](http://golang.org/doc/codelab/wiki/) converted to use Twister instead of the Go http package. 
-* [chat](http://github.com/garyburd/twister/tree/master/examples/chat) -  Chat using WebSockets.
 
 License
 -------

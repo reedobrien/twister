@@ -13,6 +13,9 @@
 // under the License.
 
 // Package websocket implements the WebSocket protocol for the Twister server.
+// 
+// WARNING: This packages has not been updated to the latest WebSocket
+// specification..
 package websocket
 
 import (
