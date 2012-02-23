@@ -188,7 +188,7 @@ func (t *transaction) prepare() (err error) {
 		return err
 	}
 
-	u, err := url.ParseRequest(requestURI)
+	u, err := url.ParseRequestURI(requestURI)
 	if err != nil {
 		return err
 	}
