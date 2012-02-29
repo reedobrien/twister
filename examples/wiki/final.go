@@ -1,5 +1,5 @@
-// This is the Go web application example (http://golang.org/doc/codelab/wiki/) 
-// converted to use Twister instead of the Go http package.
+// Wiki is a port of the Go wiki example to Twister.
+// http://golang.org/doc/codelab/wiki/
 package main
 
 import (

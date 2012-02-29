@@ -1,3 +1,4 @@
+// Chat demonstrates how to use WebSockets to implement a simple chat application.
 package main
 
 import (

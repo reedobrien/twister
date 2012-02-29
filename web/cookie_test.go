@@ -15,7 +15,6 @@
 package web
 
 import (
-	"io"
 	"reflect"
 	"testing"
 )
@@ -46,11 +45,4 @@ func TestParseCookieValues(t *testing.T) {
 			t.Errorf("parseCookieValues(%q) = %q, want %q", pt.values, m, pt.m)
 		}
 	}
-}
-
-func ExampleCookie(req *Request) {
-	// Respond to request with cookie "my-cookie-name" set to "my-cookie-value".
-	c := NewCookie("my-cookie-name", "my-cookie-value").String()
-	w := req.Respond(StatusOK, HeaderSetCookie, c)
-	io.WriteString(w, "<html><body>Hello</body></html>")
 }

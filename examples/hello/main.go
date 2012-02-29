@@ -1,3 +1,4 @@
+// Hello is a simple "hello world" application.
 package main
 
 import (

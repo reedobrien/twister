@@ -1,3 +1,4 @@
+// Demo demonstrates many of Twister's features.
 package main
 
 import (
