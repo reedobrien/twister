@@ -12,7 +12,7 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
-// Package adapter prodes types for adapting Twister request handlers to
+// Package adapter provides types for adapting Twister request handlers to
 // "het/http" request handlers.
 //
 // A simple example of running Twister handlers in a "net/http" server is:
