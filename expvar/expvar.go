@@ -131,6 +131,8 @@ type Int struct {
 }
 
 func (i *Int) MarshalJSON() ([]byte, error) {
+	i.mu.Lock()
+	defer i.mu.Unlock()
 	return []byte(strconv.FormatInt(i.i, 10)), nil
 }
 
