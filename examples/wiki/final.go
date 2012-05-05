@@ -1,5 +1,5 @@
 // Wiki is a port of the Go wiki example to Twister.
-// http://golang.org/doc/codelab/wiki/
+// http://golang.org/doc/articles/wiki/
 package main
 
 import (
