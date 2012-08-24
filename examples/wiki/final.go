@@ -71,7 +71,8 @@ func init() {
 
 func renderTemplate(req *web.Request, tmpl string, p *page) {
 	err := templates[tmpl].Execute(
-		req.Respond(web.StatusOK),
+		req.Respond(web.StatusOK,
+					web.HeaderContentType, "text/html; charset=\"utf-8\""),
 		map[string]interface{}{
 			"page": p,
 			"xsrf": req.Param.Get("xsrf"),
